@@ -7,7 +7,7 @@ import threading
 import imp
 import inspect
 from halmodule import HalModule
-from agent import Agent
+from halagent import HalAgent
 import sys
 sys.path.append(".")
 #from asyncio import Queue
@@ -58,7 +58,7 @@ class Halibot():
 			return False
 
 		for name, obj in inspect.getmembers(agt):
-			if inspect.isclass(obj) and issubclass(obj, Agent) and name != "Agent":
+			if inspect.isclass(obj) and issubclass(obj, HalAgent) and name != "HalAgent":
 				if not inst:
 					inst = name
 

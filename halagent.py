@@ -1,4 +1,4 @@
-class Agent():
+class HalAgent():
 	
 	_hal = None
 
