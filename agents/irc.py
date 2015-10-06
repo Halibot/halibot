@@ -1,7 +1,7 @@
-from agent import Agent
+from halagent import HalAgent
 import pydle, threading
 
-class IrcAgent(Agent):
+class IrcAgent(HalAgent):
 	
 	client = None
 
