@@ -9,7 +9,8 @@ class HalAgent():
 	def init(self):
 		pass
 
-	def send(self, msg):
+	def send(self, msg0):
+		msg = msg0.copy()
 		msg["source"] = "agent"
 		self._hal.receive(msg)
 

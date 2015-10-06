@@ -9,14 +9,17 @@ class HalModule():
 	def init(self):
 		pass
 
-	def send(self, msg):
+	def send(self, msg0):
+		msg = msg0.copy()
 		msg["source"] = "module"
 		self._hal.receive(msg)
 
 	def receive(self, msg):
 		pass
 
-	def reply(self, msg, body=""):
+	def reply(self, msg0, body=""):
+		# this does a double copy :(
+		msg = msg0.copy()
 		msg["body"] = body
 
 		self.send(msg)
