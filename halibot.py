@@ -46,11 +46,11 @@ class Halibot():
 			# TODO include directive
 
 			conf = inst[k]
-			conf["name"] = k
 
 			obj = self.agent_loader.get(conf["of"])
 
 			self.agents[k] = obj(self, conf)
+			self.agents[k].name = k
 			self.agents[k].init()
 			print("Instantiated agent '" + k + "'")
 
@@ -61,11 +61,11 @@ class Halibot():
 			# TODO include directive
 
 			conf = inst[k]
-			conf["name"] = k
 
 			obj = self.module_loader.get(conf["of"])
 
 			self.modules[k] = obj(self, conf)
+			self.modules[k].name = k
 			self.modules[k].init()
 			print("Instantiated module '" + k + "'")
 

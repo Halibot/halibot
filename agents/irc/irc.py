@@ -34,7 +34,7 @@ class IrcClient(pydle.Client):
 		msg["type"] = "message"
 		msg["author"] = by
 		msg["context"] = {}
-		msg["context"]["agent"] = self.agent.config["name"]
+		msg["context"]["agent"] = self.agent.name
 		msg["context"]["protocol"] = "irc"
 		msg["context"]["whom"] = target
 
