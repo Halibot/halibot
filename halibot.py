@@ -4,10 +4,9 @@
 #
 import json
 import threading
-import imp
-import inspect
 from halmodule import HalModule
 from halagent import HalAgent
+from loader import Loader
 import sys
 sys.path.append(".")
 #from asyncio import Queue
@@ -17,19 +16,19 @@ class Halibot():
 
 	config = {}
 	agents = {}
-	modules = []
+	modules = {}
 	queue = None
 	
 	def __init__(self):
 		self.queue = Queue()
 
+
 	# Start the Hal instance
 	def start(self, block=True):
 
-		# TODO: Make these do things
 		self._load_config()
-		self._load_agents()
-		self._load_modules()
+		self._instantiate_agents()
+		self._instantiate_modules()
 
 		self._start_route()
 
@@ -37,48 +36,39 @@ class Halibot():
 		with open("config.json","r") as f:
 			self.config = json.loads(f.read())
 
-	# TODO: Make robust
-	def _load_agents(self):
-		for a in self.config["agents"]:
-			self._load_agent(a)
+			self.agent_loader = Loader(self.config["agent-path"], HalAgent)
+			self.module_loader = Loader(self.config["module-path"], HalModule)
 
-	# TODO: Make robust
-	def _load_modules(self):
-		for m in self.config["modules"]:
-			self._load_module(m)
+	def _instantiate_agents(self):
+		inst = self.config["agent-instances"]
 
-	def _load_agent(self, conf):
-		f, p, d = imp.find_module(conf["path"][:-3])
-		inst = conf.get("name")
+		for k in inst.keys():
+			# TODO include directive
 
-		try:
-			agt = imp.load_module(conf["path"][:-3], f, p, d)
-		except Exception as e:
-			print(e)
-			return False
+			conf = inst[k]
 
-		for name, obj in inspect.getmembers(agt):
-			if inspect.isclass(obj) and issubclass(obj, HalAgent) and name != "HalAgent":
-				if not inst:
-					inst = name
+			obj = self.agent_loader.get(conf["of"])
 
-				self.agents[inst] = obj(self, conf)
-				self.agents[inst].init()
+			self.agents[k] = obj(self, conf)
+			self.agents[k].name = k
+			self.agents[k].init()
+			print("Instantiated agent '" + k + "'")
 
-	def _load_module(self, conf):
-		f, p, d = imp.find_module(conf["path"][:-3])
-		inst = conf.get("name")
+	def _instantiate_modules(self):
+		inst = self.config["module-instances"]
 
-		try:
-			mod = imp.load_module(conf["path"][:-3], f, p, d)
-		except Exception as e:
-			print(e)
-			return False
+		for k in inst.keys():
+			# TODO include directive
 
-		for name, obj in inspect.getmembers(mod):
-			if inspect.isclass(obj) and issubclass(obj, HalModule) and name != "HalModule":
-				self.modules.append(obj(self, conf))
-				self.modules[-1].init()
+			conf = inst[k]
+
+			obj = self.module_loader.get(conf["of"])
+
+			self.modules[k] = obj(self, conf)
+			self.modules[k].name = k
+			self.modules[k].init()
+			print("Instantiated module '" + k + "'")
+
 
 	def _start_route(self):
 		t = threading.Thread(target=self._do_route)
@@ -92,7 +82,7 @@ class Halibot():
 			if m["source"] == "module":
 				self.agents[m["context"]["agent"]].receive(m)
 			elif m["source"] == "agent":
-				for a in self.modules:
+				for a in self.modules.values():
 					a.receive(m)
 
 	def receive(self, msg):
