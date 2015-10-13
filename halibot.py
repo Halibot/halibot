@@ -11,6 +11,7 @@ import sys
 sys.path.append(".")
 #from asyncio import Queue
 from queue import Queue
+import logging
 
 class Halibot():
 
@@ -18,9 +19,11 @@ class Halibot():
 	agents = {}
 	modules = {}
 	queue = None
+	log = None
 	
 	def __init__(self):
 		self.queue = Queue()
+		self.log = logging.getLogger(self.__class__.__name__)
 
 
 	# Start the Hal instance
@@ -52,7 +55,7 @@ class Halibot():
 			self.agents[k] = obj(self, conf)
 			self.agents[k].name = k
 			self.agents[k].init()
-			print("Instantiated agent '" + k + "'")
+			self.log.info("Instantiated agent '" + k + "'")
 
 	def _instantiate_modules(self):
 		inst = self.config["module-instances"]
@@ -67,7 +70,7 @@ class Halibot():
 			self.modules[k] = obj(self, conf)
 			self.modules[k].name = k
 			self.modules[k].init()
-			print("Instantiated module '" + k + "'")
+			self.log.info("Instantiated module '" + k + "'")
 
 
 	def _start_route(self):
