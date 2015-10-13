@@ -4,13 +4,15 @@
 #
 import json
 import threading
+import sys
 from halmodule import HalModule
 from halagent import HalAgent
 from loader import Loader
-import sys
-sys.path.append(".")
-#from asyncio import Queue
-from queue import Queue
+from queue import Queue,Empty
+
+# Avoid appending "." if it i
+if "." not in sys.path:
+	sys.path.append(".")
 
 class Halibot():
 
@@ -18,19 +20,24 @@ class Halibot():
 	agents = {}
 	modules = {}
 	queue = None
-	
+	thread = None
+	running = False
+	rld = False
+
 	def __init__(self):
 		self.queue = Queue()
 
-
 	# Start the Hal instance
 	def start(self, block=True):
-
+		self.running = True
 		self._load_config()
 		self._instantiate_agents()
 		self._instantiate_modules()
 
 		self._start_route()
+
+		if block:
+			self.thread.join()
 
 	def _load_config(self):
 		with open("config.json","r") as f:
@@ -71,14 +78,18 @@ class Halibot():
 
 
 	def _start_route(self):
-		t = threading.Thread(target=self._do_route)
+		self.thread = threading.Thread(target=self._do_route)
 
-		t.start()
+		self.thread.start()
 
 
 	def _do_route(self):
-		while True:
-			m = self.queue.get(block=True)
+		while self.running:
+			try:
+				m = self.queue.get(block=True, timeout=5)
+			except Empty:
+				continue
+
 			if m["source"] == "module":
 				self.agents[m["context"]["agent"]].receive(m)
 			elif m["source"] == "agent":
