@@ -13,7 +13,7 @@ class HalAgent():
 		pass
 
 	def send(self, msg0):
-		self.log.debug("Sending to base:" + str(msg0))
+		self.log.debug("Sending to base: " + str(msg0))
 		msg = msg0.copy()
 		msg["source"] = "agent"
 		self._hal.receive(msg)
