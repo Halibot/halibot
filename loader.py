@@ -7,6 +7,7 @@ import os
 import imp
 import inspect
 import json
+import logging
 
 class Loader():
 
@@ -15,6 +16,7 @@ class Loader():
 	def __init__(self, paths, superclass):
 		self.paths = paths
 		self.superclass = superclass
+		self.log = logging.getLogger(self.__class__.__name__)
 
 	# Finds the basepath (directory path) of an item
 	def _find(self, name):
@@ -41,7 +43,7 @@ class Loader():
 		try:
 			pymod = imp.load_source(name, src)
 		except Exception as e:
-			print(e)
+			self.log.warning(e)
 			return False
 
 		for objname, obj in inspect.getmembers(pymod):
@@ -50,7 +52,8 @@ class Loader():
 				self.items[name] = obj
 				return
 
-		raise Exception("Could not find a " + supername + " in '" + src + "'!")
+		self.log.error("Could not find a " + supername + " in '" + src + "'!")
+		return False
 
 	# Returns an item by name, loads it if not loaded
 	def get(self, name):

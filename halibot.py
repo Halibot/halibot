@@ -13,6 +13,7 @@ from queue import Queue,Empty
 # Avoid appending "." if it i
 if "." not in sys.path:
 	sys.path.append(".")
+import logging
 
 class Halibot():
 
@@ -20,12 +21,16 @@ class Halibot():
 	agents = {}
 	modules = {}
 	queue = None
+
 	thread = None
 	running = False
 	rld = False
 
+	log = None
+	
 	def __init__(self):
 		self.queue = Queue()
+		self.log = logging.getLogger(self.__class__.__name__)
 
 	# Start the Hal instance
 	def start(self, block=True):
@@ -59,7 +64,7 @@ class Halibot():
 			self.agents[k] = obj(self, conf)
 			self.agents[k].name = k
 			self.agents[k].init()
-			print("Instantiated agent '" + k + "'")
+			self.log.info("Instantiated agent '" + k + "'")
 
 	def _instantiate_modules(self):
 		inst = self.config["module-instances"]
@@ -74,7 +79,7 @@ class Halibot():
 			self.modules[k] = obj(self, conf)
 			self.modules[k].name = k
 			self.modules[k].init()
-			print("Instantiated module '" + k + "'")
+			self.log.info("Instantiated module '" + k + "'")
 
 
 	def _start_route(self):

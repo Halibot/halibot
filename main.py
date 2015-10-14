@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import halibot, imp
+import halibot
+import imp
+import logging
 
 # Reloads the halibot core, does not reinitialize modules/agents
 #  Takes in old bot instances, returns new bot
@@ -20,6 +22,7 @@ def hal_reload(bot):
 	return newbot
 
 def main():
+	logging.basicConfig(level=logging.DEBUG)
 	bot = halibot.Halibot()
 	bot.start(block=True)
 
