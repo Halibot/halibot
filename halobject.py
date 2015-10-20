@@ -1,5 +1,5 @@
 import logging
-from queue import Queue
+import asyncio
 from threading import Thread
 
 class HalObject():
@@ -9,18 +9,12 @@ class HalObject():
 		self.config = conf
 		self.log = logging.getLogger(self.__class__.__name__) # TODO: Put instantiated name in here too
 
-		self._msg_queue = Queue()
-		self._thread = Thread(target=self._spin)
+		self.eventloop = asyncio.SelectorEventLoop()
+		self._thread = Thread(target=self.eventloop.run_forever)
 		self._thread.start()
 
-	def _spin(self):
-		while True:
-			m = self._msg_queue.get()
-			self.receive(m)
-			self._msg_queue.task_done()
-
 	def _queue_msg(self, msg):
-		self._msg_queue.put(msg.copy())
+		self.eventloop.call_soon_threadsafe(self.receive, msg.copy())
 
 	def init(self):
 		pass
