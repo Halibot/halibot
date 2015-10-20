@@ -39,6 +39,16 @@ class Halibot():
 		self._instantiate_agents()
 		self._instantiate_modules()
 
+	def shutdown(self):
+		self.log.info("Shutting down halibot...");
+
+		for m in self.modules.values():
+			m.shutdown()
+		for a in self.agents.values():
+			a.shutdown()
+
+		self.log.info("Halibot shutdown. Threads left: " + str(threading.active_count()))
+
 	def _load_config(self):
 		with open("config.json","r") as f:
 			self.config = json.loads(f.read())

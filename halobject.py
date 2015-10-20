@@ -19,6 +19,10 @@ class HalObject():
 	def init(self):
 		pass
 
+	def shutdown(self):
+		self.eventloop.call_soon_threadsafe(self.eventloop.stop)
+		self._thread.join()
+
 	# See halmodule and halagent for their respective implementations
 	def send(self, msg):
 		pass
