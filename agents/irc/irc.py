@@ -36,8 +36,6 @@ class IrcAgent(HalAgent):
 
 
 	def shutdown(self):
-		super(IrcAgent, self).shutdown()
-
 		self.client.disconnect()
 		self.client.eventloop.stop()
 		self.thread.join()

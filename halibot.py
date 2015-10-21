@@ -43,9 +43,9 @@ class Halibot():
 		self.log.info("Shutting down halibot...");
 
 		for m in self.modules.values():
-			m.shutdown()
+			m._shutdown()
 		for a in self.agents.values():
-			a.shutdown()
+			a._shutdown()
 
 		self.log.info("Halibot shutdown. Threads left: " + str(threading.active_count()))
 

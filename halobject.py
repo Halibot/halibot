@@ -13,6 +13,11 @@ class HalObject():
 		self._thread = Thread(target=self.eventloop.run_forever)
 		self._thread.start()
 
+	def _shutdown(self):
+		self.eventloop.call_soon_threadsafe(self.eventloop.stop)
+		self._thread.join()
+		self.shutdown()
+
 	def _queue_msg(self, msg):
 		self.eventloop.call_soon_threadsafe(self.receive, msg.copy())
 
@@ -20,8 +25,7 @@ class HalObject():
 		pass
 
 	def shutdown(self):
-		self.eventloop.call_soon_threadsafe(self.eventloop.stop)
-		self._thread.join()
+		pass
 
 	# See halmodule and halagent for their respective implementations
 	def send(self, msg):
