@@ -27,6 +27,14 @@ class HalObject():
 	def send(self, msg):
 		pass
 
+	def send_to(self, msg, dests):
+		for name in dests:
+			to = self._hal.get_object(name)
+			if to:
+				to._queue_msg(msg)
+			else:
+				self.log.warning('Unknown module/agent: ' + str(name))
+
 	def receive(self, msg):
 		self.log.debug("Received from base: " + str(msg))
 		pass

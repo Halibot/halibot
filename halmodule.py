@@ -4,10 +4,5 @@ class HalModule(HalObject):
 
 	def send(self, msg):
 		out = self.config.get('out', [ msg['context']['agent'] ])
+		self.send_to(msg, out)
 
-		for name in out:
-			to = self._hal.get_object(name)
-			if to:
-				to._queue_msg(msg)
-			else:
-				self.log.warning('Unknown module/agent: ' + str(name))
