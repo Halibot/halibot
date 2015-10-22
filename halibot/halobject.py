@@ -43,3 +43,10 @@ class HalObject():
 		self.log.debug("Received from base: " + str(msg))
 		pass
 
+	def connect(self, to):
+		# FIXME Don't modify the config like this?
+		if 'out' in self.config:
+			self.config['out'].append(to.name)
+		else:
+			self.config['out'] = [ to.name ]
+
