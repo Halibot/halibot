@@ -24,15 +24,19 @@ class Halibot():
 	running = False
 	log = None
 
-	def __init__(self):
+	def __init__(self, **kwargs):
 		self.log = logging.getLogger(self.__class__.__name__)
+
+		self.use_config = kwargs.get("use_config", True)
 
 	# Start the Hal instance
 	def start(self, block=True):
 		self.running = True
-		self._load_config()
-		self._instantiate_agents()
-		self._instantiate_modules()
+
+		if self.use_config:
+			self._load_config()
+			self._instantiate_agents()
+			self._instantiate_modules()
 
 	def shutdown(self):
 		self.log.info("Shutting down halibot...");
