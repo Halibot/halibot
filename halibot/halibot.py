@@ -27,7 +27,7 @@ class Halibot():
 	rld = False
 
 	log = None
-	
+
 	def __init__(self):
 		self.queue = Queue()
 		self.log = logging.getLogger(self.__class__.__name__)
@@ -92,3 +92,15 @@ class Halibot():
 		if name in self.agents: return self.agents[name]
 		return None
 
+	# TODO: Reload a class, and restart all modules of that class
+	def reload(self, cls):
+		pass
+
+	# Restart a module instance by name
+	def restart(self, name):
+		o = self.get_object(name)
+		if o:
+			o.shutdown()
+			o.init()
+		else:
+			self.logger.warning("Failed to restart instance '{}'".format(name))
