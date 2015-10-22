@@ -98,4 +98,4 @@ class Halibot():
 			o.shutdown()
 			o.init()
 		else:
-			self.logger.warning("Failed to restart instance '{}'".format(name))
+			self.log.warning("Failed to restart instance '{}'".format(name))
