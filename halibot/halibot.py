@@ -20,16 +20,11 @@ class Halibot():
 	config = {}
 	agents = {}
 	modules = {}
-	queue = None
 
-	thread = None
 	running = False
-	rld = False
-
 	log = None
 
 	def __init__(self):
-		self.queue = Queue()
 		self.log = logging.getLogger(self.__class__.__name__)
 
 	# Start the Hal instance
