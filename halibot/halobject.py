@@ -4,7 +4,7 @@ from threading import Thread
 
 class HalObject():
 
-	def __init__(self, hal, conf):
+	def __init__(self, hal, conf={}):
 		self._hal = hal
 		self.config = conf
 		self.log = logging.getLogger(self.__class__.__name__) # TODO: Put instantiated name in here too
