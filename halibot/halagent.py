@@ -1,4 +1,4 @@
-from halobject import HalObject
+from .halobject import HalObject
 
 class HalAgent(HalObject):
 

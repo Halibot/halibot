@@ -5,10 +5,10 @@
 import json
 import threading
 import sys
-from halmodule import HalModule
-from halagent import HalAgent
-from loader import Loader
 from queue import Queue,Empty
+from .halmodule import HalModule
+from .halagent import HalAgent
+from .loader import Loader
 
 # Avoid appending "." if it i
 if "." not in sys.path:

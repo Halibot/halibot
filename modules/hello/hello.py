@@ -2,7 +2,7 @@
 # Hello World reference Halibot Module
 #  Replies to any message starting with "!hello"
 #
-from halmodule import HalModule
+from halibot import HalModule
 
 # Hello Module
 #  Upon receiving a message from any source, checks if the body of that message
