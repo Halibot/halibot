@@ -39,10 +39,15 @@ class Halibot():
 		self._instantiate_agents()
 		self._instantiate_modules()
 
-		self._start_route()
+	def shutdown(self):
+		self.log.info("Shutting down halibot...");
 
-		if block:
-			self.thread.join()
+		for m in self.modules.values():
+			m._shutdown()
+		for a in self.agents.values():
+			a._shutdown()
+
+		self.log.info("Halibot shutdown. Threads left: " + str(threading.active_count()))
 
 	def _load_config(self):
 		with open("config.json","r") as f:
@@ -81,25 +86,9 @@ class Halibot():
 			self.modules[k].init()
 			self.log.info("Instantiated module '" + k + "'")
 
+	def get_object(self, name):
+		# TODO priority?
+		if name in self.modules: return self.modules[name]
+		if name in self.agents: return self.agents[name]
+		return None
 
-	def _start_route(self):
-		self.thread = threading.Thread(target=self._do_route)
-
-		self.thread.start()
-
-
-	def _do_route(self):
-		while self.running:
-			try:
-				m = self.queue.get(block=True, timeout=5)
-			except Empty:
-				continue
-
-			if m["source"] == "module":
-				self.agents[m["context"]["agent"]].receive(m)
-			elif m["source"] == "agent":
-				for a in self.modules.values():
-					a.receive(m)
-
-	def receive(self, msg):
-		self.queue.put(msg)

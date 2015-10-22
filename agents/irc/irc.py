@@ -34,6 +34,12 @@ class IrcAgent(HalAgent):
 	def receive(self, msg):
 		self.client.message(msg["context"]["whom"], msg["body"])
 
+
+	def shutdown(self):
+		self.client.disconnect()
+		self.client.eventloop.stop()
+		self.thread.join()
+
 	# Start the thread the IRC client will live in
 	#  This is so the client does not block on halibot's instantiation (main) thread,
 	#  thus causing to stop there and never finish starting up
