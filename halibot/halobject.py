@@ -4,7 +4,7 @@ from threading import Thread
 
 class HalObject():
 
-	def __init__(self, hal, conf):
+	def __init__(self, hal, conf={}):
 		self._hal = hal
 		self.config = conf
 		self.log = logging.getLogger(self.__class__.__name__) # TODO: Put instantiated name in here too
@@ -42,4 +42,11 @@ class HalObject():
 	def receive(self, msg):
 		self.log.debug("Received from base: " + str(msg))
 		pass
+
+	def connect(self, to):
+		# FIXME Don't modify the config like this?
+		if 'out' in self.config:
+			self.config['out'].append(to.name)
+		else:
+			self.config['out'] = [ to.name ]
 

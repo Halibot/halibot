@@ -24,15 +24,19 @@ class Halibot():
 	running = False
 	log = None
 
-	def __init__(self):
+	def __init__(self, **kwargs):
 		self.log = logging.getLogger(self.__class__.__name__)
+
+		self.use_config = kwargs.get("use_config", True)
 
 	# Start the Hal instance
 	def start(self, block=True):
 		self.running = True
-		self._load_config()
-		self._instantiate_agents()
-		self._instantiate_modules()
+
+		if self.use_config:
+			self._load_config()
+			self._instantiate_agents()
+			self._instantiate_modules()
 
 	def shutdown(self):
 		self.log.info("Shutting down halibot...");
@@ -43,6 +47,18 @@ class Halibot():
 			a._shutdown()
 
 		self.log.info("Halibot shutdown. Threads left: " + str(threading.active_count()))
+
+	def add_agent_instance(self, name, inst):
+		self.agents[name] = inst
+		inst.name = name
+		inst.init()
+		self.log.info("Instantiated agent '" + name + "'")
+
+	def add_module_instance(self, name, inst):
+		self.modules[name] = inst
+		inst.name = name
+		inst.init()
+		self.log.info("Instantiated module '" + name + "'")
 
 	def _load_config(self):
 		with open("config.json","r") as f:
@@ -58,13 +74,10 @@ class Halibot():
 			# TODO include directive
 
 			conf = inst[k]
-
 			obj = self.agent_loader.get(conf["of"])
+			inst = obj(self, conf)
 
-			self.agents[k] = obj(self, conf)
-			self.agents[k].name = k
-			self.agents[k].init()
-			self.log.info("Instantiated agent '" + k + "'")
+			self.add_agent_instance(k, inst)
 
 	def _instantiate_modules(self):
 		inst = self.config["module-instances"]
@@ -73,13 +86,10 @@ class Halibot():
 			# TODO include directive
 
 			conf = inst[k]
-
 			obj = self.module_loader.get(conf["of"])
+			inst = obj(self, conf)
 
-			self.modules[k] = obj(self, conf)
-			self.modules[k].name = k
-			self.modules[k].init()
-			self.log.info("Instantiated module '" + k + "'")
+			self.add_module_instance(k, inst)
 
 	def get_object(self, name):
 		# TODO priority?
