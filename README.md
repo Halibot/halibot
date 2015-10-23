@@ -1,4 +1,4 @@
-# Halibot
+# Halibot [![Build Status](https://travis-ci.org/Halibot/halibot.svg)](https://travis-ci.org/Halibot/halibot)
 The world's greatest saltwater multi-protocol chat bot framework!
 
 For the module and agent repositories, see [halibot-extra](https://github.com/halibot-extra).
