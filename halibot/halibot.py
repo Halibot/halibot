@@ -75,9 +75,8 @@ class Halibot():
 
 			conf = inst[k]
 			obj = self.agent_loader.get(conf["of"])
-			inst = obj(self, conf)
 
-			self.add_agent_instance(k, inst)
+			self.add_agent_instance(k, obj(self, conf))
 
 	def _instantiate_modules(self):
 		inst = self.config["module-instances"]
@@ -87,9 +86,8 @@ class Halibot():
 
 			conf = inst[k]
 			obj = self.module_loader.get(conf["of"])
-			inst = obj(self, conf)
 
-			self.add_module_instance(k, inst)
+			self.add_module_instance(k, obj(self, conf))
 
 	def get_object(self, name):
 		# TODO priority?
