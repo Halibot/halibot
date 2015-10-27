@@ -26,7 +26,8 @@ Here is an example config for reference:
   "agent-instances": {
     "irc0": {
       "of": "irc",
-      "channel": "##example"
+      "channel": "##example",
+      "nickname": "ExampleName"
     }
   },
 

@@ -19,7 +19,7 @@ class IrcAgent(HalAgent):
 	#  NOT in __init__()!
 	def init(self):
 		# Create the IRC client object as defined/extended below
-		self.client = IrcClient(nickname="halibot")
+		self.client = IrcClient(nickname=self.config['nickname'])
 		
 		# Give the client object a handle to talk back to this agent class
 		self.client.agent = self 
