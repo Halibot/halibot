@@ -5,6 +5,8 @@ For the module and agent repositories, see [halibot-extra](https://github.com/ha
 
 This is the repository for the new rewrite (codename halv3). For the old XMPP-specific version which this is mostly based on, please see [halibot/halibot-legacy](http://github.com/halibot/halibot-legacy).
 
+You can contact us in ##halibot on freenode. If you wait around for long enough you will get a response!
+
 Check out our [sweet site](https://halibot.github.io)!
 
 ## Usage
