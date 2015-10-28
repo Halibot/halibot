@@ -19,7 +19,7 @@ class HalObject():
 		self.shutdown()
 
 	def _queue_msg(self, msg):
-		self.eventloop.call_soon_threadsafe(self.receive, msg.copy())
+		self.eventloop.call_soon_threadsafe(self.receive, msg)
 
 	def init(self):
 		pass
