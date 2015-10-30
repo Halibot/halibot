@@ -2,7 +2,7 @@
 # Hello World reference Halibot Module
 #  Replies to any message starting with "!hello"
 #
-from halibot import HalModule
+from halibot import HalModule, Message
 
 # Hello Module
 #  Upon receiving a message from any source, checks if the body of that message
@@ -23,10 +23,9 @@ class Hello(HalModule):
 	#  To where it comes from, check the "context" field.
 	def receive(self, msg):
 		# The "body" field should always be populated, thus this is a safe assumption.(otherwise, an agent isn't working properly!
-		if msg["body"].startswith("!hello"):
+		if msg.body.startswith("!hello"):
 			# Send a message back to the sender, using the same method that was used to receive it
-			msg["body"] = "Hello world!"
-			self.send(msg)
+			self.reply(msg, body="Hello world!")
 
 	# NOTE: The HalModule also includes a send() method, which reply() calls out to
 	#  reply() is the same as send()'ing a copy of the received message, with a new body
