@@ -1,6 +1,7 @@
 import logging
 import asyncio
 from threading import Thread
+from .message import Message
 
 class HalObject():
 
@@ -38,6 +39,13 @@ class HalObject():
 				to._queue_msg(msg)
 			else:
 				self.log.warning('Unknown module/agent: ' + str(name))
+
+	def reply(self, to, **kwargs):
+		# TODO should we do something with misc?
+
+		body = kwargs.get('body', None)
+		author = kwargs.get('author', None) # TODO different default author?
+		self.send(Message(body=body, context=to.context, author=author))
 
 	def receive(self, msg):
 		self.log.debug("Received from base: " + str(msg))
