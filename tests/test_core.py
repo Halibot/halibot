@@ -21,12 +21,6 @@ class StubAgent(halibot.HalAgent):
 	def init(self):
 		self.inited = True
 
-# TODO remove and use actual message builder/constructor
-def make_test_msg(body):
-	return {
-		'body': body,
-	}
-
 class TestCore(util.HalibotTestCase):
 
 	def test_add_module(self):
@@ -49,9 +43,9 @@ class TestCore(util.HalibotTestCase):
 		self.bot.add_agent_instance('stub_agent', agent)
 		self.bot.add_module_instance('stub_mod', mod)
 
-		foo = make_test_msg('foo')
-		bar = make_test_msg('bar')
-		baz = make_test_msg('baz')
+		foo = halibot.Message(body='foo')
+		bar = halibot.Message(body='bar')
+		baz = halibot.Message(body='baz')
 
 		agent.connect(mod)
 		agent.send(foo)
