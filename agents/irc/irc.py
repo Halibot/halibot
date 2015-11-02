@@ -79,4 +79,4 @@ class IrcClient(pydle.Client):
 		msg = Message(body=text, author=by, context=cxt)
 
 		# Send the Halibot-friendly message to the Halibot base for module processing
-		self.agent.send(msg)
+		self.agent.dispatch(msg)
