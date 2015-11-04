@@ -2,7 +2,7 @@
 # Reference Halibot IRC Agent
 #  Connects to an IRC server and relays messages to and from the base
 #
-from halibot import HalAgent
+from halibot import HalAgent, Context, Message
 import pydle, threading
 
 # Haliot Reference IRC Agent
@@ -32,7 +32,7 @@ class IrcAgent(HalAgent):
 	#  In this case, the logic for sending a message to the IRC channel is put here,
 	#  using the "context" of the message to know where to send it.
 	def receive(self, msg):
-		self.client.message(msg["context"]["whom"], msg["body"])
+		self.client.message(msg.context.whom, msg.body)
 
 
 	def shutdown(self):
@@ -75,15 +75,8 @@ class IrcClient(pydle.Client):
 	#  The purpose of this agent is to communicate with IRC,
 	#  so this repackages the message from Pydle into a Halibot-friendly message
 	def on_channel_message(self, target, by, text):
-		msg = {}
-
-		msg["body"] = text
-		msg["type"] = "message"
-		msg["author"] = by
-		msg["context"] = {}
-		msg["context"]["agent"] = self.agent.name
-		msg["context"]["protocol"] = "irc"
-		msg["context"]["whom"] = target
+		cxt = Context(agent=self.agent.name, protocol='irc', whom=target)
+		msg = Message(body=text, author=by, context=cxt)
 
 		# Send the Halibot-friendly message to the Halibot base for module processing
-		self.agent.send(msg)
+		self.agent.dispatch(msg)

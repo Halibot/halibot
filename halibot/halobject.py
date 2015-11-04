@@ -19,7 +19,7 @@ class HalObject():
 		self.shutdown()
 
 	def _queue_msg(self, msg):
-		self.eventloop.call_soon_threadsafe(self.receive, msg.copy())
+		self.eventloop.call_soon_threadsafe(self.receive, msg)
 
 	def init(self):
 		pass
@@ -42,11 +42,3 @@ class HalObject():
 	def receive(self, msg):
 		self.log.debug("Received from base: " + str(msg))
 		pass
-
-	def connect(self, to):
-		# FIXME Don't modify the config like this?
-		if 'out' in self.config:
-			self.config['out'].append(to.name)
-		else:
-			self.config['out'] = [ to.name ]
-
