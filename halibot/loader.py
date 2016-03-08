@@ -59,3 +59,9 @@ class Loader():
 		if not name in self.items:
 			self._load(name)
 		return self.items[name]
+
+	# Remove a class by name from the loaded objects dict
+	#  Return the class (True) if found, otherwise None (false)
+	def remove(self, name):
+		if name in self.items.keys():
+			return self.items.pop(name, None)
