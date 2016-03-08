@@ -11,9 +11,8 @@ import logging
 
 class Loader():
 
-	items = {}
-
 	def __init__(self, paths, superclass):
+		self.items = {}
 		self.paths = paths
 		self.superclass = superclass
 		self.log = logging.getLogger(self.__class__.__name__)
