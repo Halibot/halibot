@@ -95,9 +95,18 @@ class Halibot():
 		if name in self.agents: return self.agents[name]
 		return None
 
-	# TODO: Reload a class, and restart all modules of that class
-	def reload(self, cls):
-		pass
+	# Reload a class, and restart all modules of that class
+	#  name: Class name, should match halmodule class name
+	def reload_class(self, name):
+		for ld in (self.agent_loader, self.module_loader):
+			if ld.remove(name):
+				log.debug.info("Removed loaded class: '{}'".format(name))
+				obj = self.module_loader.get(name)
+				for o in self.modules.items():
+					if o[1].__class__.__name__ == obj.__name__:
+						o[1]._shutdown()
+						conf = o[1].config
+						self.add_module_instance(o[0], obj(self, conf))
 
 	# Restart a module instance by name
 	def restart(self, name):
