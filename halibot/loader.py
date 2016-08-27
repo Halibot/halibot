@@ -28,15 +28,8 @@ class Loader():
 
 		raise Exception("Could not find module/agent '" + name + "'!");
 
-	# Loads an items into the items array
-	def _load(self, name):
-		basepath = self._find(name)
-		supername = self.superclass.__name__
-
-		with open(basepath + "config.json", "r") as f:
-			# TODO something more with this
-			config = json.loads(f.read())
-
+	# TODO: Fully deprecate this with the new package format
+	def _load_legacy(self, name, basepath, supername, config):
 		src = basepath + config["main"]
 
 		try:
@@ -47,12 +40,46 @@ class Loader():
 
 		for objname, obj in inspect.getmembers(pymod):
 			if inspect.isclass(obj) and issubclass(obj, self.superclass) and objname != supername:
-				# TODO handle multiple superclasses per python module somehow?
 				self.items[name] = obj
 				return
 
 		self.log.error("Could not find a " + supername + " in '" + src + "'!")
 		return False
+
+	# Loads an items into the items array
+	def _load(self, name):
+		basepath = self._find(name)
+		supername = self.superclass.__name__
+
+		with open(basepath + "config.json", "r") as f:
+			config = json.loads(f.read())
+
+		# Check if using the new loader format or not
+		if not config.get("main"):
+			self.log.warning("Failed to load '{}', 'main' key not found in module config".format(name))
+			return False
+		elif len(config.get("main").split(":")) != 2:
+			self.log.info("New class specifier not detected, falling back to class detection-based loader")
+			self._load_legacy(name, basepath, supername, config)
+			return
+
+		src,clsname = config["main"].split(":")
+		src = basepath + src
+
+		try:
+			pymod = imp.load_source(name, src)
+		except Exception as e:
+			self.log.warning(e)
+			return False
+
+		try:
+			obj = getattr(pymod,clsname)
+		except:
+			self.warning("Module '{}' failed to load: Could not find class '{}' in '{}'".format(name, src, cls))
+			return
+
+		self.items[name] = obj
+
 
 	# Returns an item by name, loads it if not loaded
 	def get(self, name):
