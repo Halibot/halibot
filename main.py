@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import halibot
-import imp
 import logging
 
 def main():
