@@ -1,3 +1,3 @@
 {
-  "main": "agentcontainer.py"
+  "main": "agentcontainer.py:AgentContainer"
 }
