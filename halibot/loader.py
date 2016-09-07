@@ -56,10 +56,10 @@ class Loader():
 
 		# Check if using the new loader format or not
 		if not config.get("main"):
-			self.log.warning("Failed to load '{}', 'main' key not found in module config".format(name))
+			self.log.error("Failed to load '{}', 'main' key not found in module config".format(name))
 			return False
 		elif len(config.get("main").split(":")) != 2:
-			self.log.info("New class specifier not detected, falling back to class detection-based loader")
+			self.log.warning("New class specifier not detected, falling back to class detection-based loader")
 			self._load_legacy(name, basepath, supername, config)
 			return
 
@@ -75,7 +75,7 @@ class Loader():
 		try:
 			obj = getattr(pymod,clsname)
 		except:
-			self.warning("Module '{}' failed to load: Could not find class '{}' in '{}'".format(name, src, cls))
+			self.error("Module '{}' failed to load: Could not find class '{}' in '{}'".format(name, src, cls))
 			return
 
 		self.items[name] = obj
