@@ -27,10 +27,6 @@ class HalObject():
 	def shutdown(self):
 		pass
 
-	# See halmodule and halagent for their respective implementations
-	def send(self, msg):
-		pass
-
 	def send_to(self, msg, dests):
 		for name in dests:
 			to = self._hal.get_object(name)
