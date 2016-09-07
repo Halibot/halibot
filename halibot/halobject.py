@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import inspect
 from threading import Thread
 
 class HalObject():
@@ -18,8 +19,15 @@ class HalObject():
 		self._thread.join()
 		self.shutdown()
 
-	def _queue_msg(self, msg):
-		self.eventloop.call_soon_threadsafe(self.receive, msg)
+	def _queue_msg(self, msg, whom):
+		self.eventloop.call_soon_threadsafe(self._receive, msg, whom)
+
+	# Calls receive() with the proper number of arguments
+	def _receive(self, msg, whom):
+		if len(inspect.getargspec(self.receive).args) == 2:
+			self.receive(msg)
+		else:
+			self.receive(msg, whom)
 
 	def init(self):
 		pass
@@ -28,13 +36,16 @@ class HalObject():
 		pass
 
 	def send_to(self, msg, dests):
-		for name in dests:
+		for ri in dests:
+			name = ri.split('/')[0]
+			whom = '/'.join(ri.split('/')[1:])
 			to = self._hal.get_object(name)
 			if to:
-				to._queue_msg(msg)
+				to._queue_msg(msg, whom)
 			else:
 				self.log.warning('Unknown module/agent: ' + str(name))
 
-	def receive(self, msg):
+	def receive(self, msg, whom):
 		self.log.debug("Received from base: " + str(msg))
 		pass
+

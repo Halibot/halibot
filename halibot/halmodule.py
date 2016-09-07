@@ -7,9 +7,13 @@ class HalModule(HalObject):
 		body = kwargs.get('body', msg0.body)
 		mtype = kwargs.get('type', msg0.type)
 		author = kwargs.get('author', msg0.author)
-		context = kwargs.get('context', msg0.context)
+		origin = kwargs.get('origin', msg0.origin)
 
-		msg = Message(body=body, type=mtype, author=author, context=context)
+		msg = Message(body=body, type=mtype, author=author, origin=origin)
 
-		self.send_to(msg, [ msg.context.agent ])
+		# For deprecation, remove for 1.0
+		if 'context' in kwargs:
+			msg.context = kwargs['context']
+
+		self.send_to(msg, [ msg.origin ])
 
