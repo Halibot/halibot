@@ -60,9 +60,9 @@ class TestCore(util.HalibotTestCase):
 			timeout -= increment
 
 		self.assertEqual(3, len(mod.received))
-		self.assertEqual(foo, mod.received[0])
-		self.assertEqual(bar, mod.received[1])
-		self.assertEqual(baz, mod.received[2])
+		self.assertEqual(foo.body, mod.received[0].body)
+		self.assertEqual(bar.body, mod.received[1].body)
+		self.assertEqual(baz.body, mod.received[2].body)
 
 if __name__ == '__main__':
 	unittest.main()
