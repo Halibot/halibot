@@ -34,6 +34,7 @@ class Message():
 		self.author = kwargs.get('author', None)
 		self.origin = kwargs.get('origin', None)
 		self.misc = kwargs.get('misc', jsdict())
+		self.target = kwargs.get('target', '')
 
 		# Deprecated, remove at 1.0
 		# Supresses expected warning message
@@ -59,3 +60,6 @@ class Message():
 			object.__setattr__(self.context, 'whom', '/'.join(ls[1:]))
 
 		object.__setattr__(self, key, value)
+
+	def whom(self):
+		return '/'.join(self.target.split('/')[1:])

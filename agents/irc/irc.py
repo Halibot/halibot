@@ -30,10 +30,10 @@ class IrcAgent(HalAgent):
 	# Implement the receive() function as defined in the HalModule class
 	#  This is called when the Halibot wants to send a message out using this agent.
 	#  In this case, the logic for sending a message to the IRC channel is put here,
-	#  using the "channel" arguement, which is the tail end of the resource
+	#  using the whom as the "channel", which is the tail end of the resource
 	#  identifier for this target (e.g. the "#foo" in "irc/#foo").
-	def receive(self, msg, channel):
-		self.client.message(channel, msg.body)
+	def receive(self, msg):
+		self.client.message(msg.whom(), msg.body)
 
 
 	def shutdown(self):
