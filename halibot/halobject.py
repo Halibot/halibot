@@ -41,6 +41,5 @@ class HalObject():
 				self.log.warning('Unknown module/agent: ' + str(name))
 
 	def receive(self, msg):
-		self.log.debug("Received from base: " + str(msg))
 		pass
 
