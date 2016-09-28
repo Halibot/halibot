@@ -1,6 +1,16 @@
 import json
 import logging
 
+def hasPermission(perm, reply=False):
+	def real_dec(func):
+		def wrapper(self, msg, *args, **kwargs):
+			if self._hal.auth.hasPermission(msg.origin, msg.identity, perm):
+				func(self, msg, *args, **kwargs)
+			elif reply:
+				self.reply(msg, body="Permission Denied")
+		return wrapper
+	return real_dec
+
 class HalAuth():
 
 	def __init__(self):
