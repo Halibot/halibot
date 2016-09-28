@@ -8,6 +8,7 @@ import sys
 from queue import Queue,Empty
 from .halmodule import HalModule
 from .halagent import HalAgent
+from .halauth import HalAuth
 from .loader import Loader
 
 # Avoid appending "." if it i
@@ -28,6 +29,9 @@ class Halibot():
 		self.log = logging.getLogger(self.__class__.__name__)
 
 		self.use_config = kwargs.get("use_config", True)
+		self.use_auth = kwargs.get("use_auth", True)
+
+		self.auth = HalAuth()
 
 	# Start the Hal instance
 	def start(self, block=True):
@@ -37,6 +41,8 @@ class Halibot():
 			self._load_config()
 			self._instantiate_agents()
 			self._instantiate_modules()
+			if self.use_auth:
+				self.auth.load_auth(self.config.get("auth-path","permissions.json"))
 
 	def shutdown(self):
 		self.log.info("Shutting down halibot...");
