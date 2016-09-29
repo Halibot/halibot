@@ -45,7 +45,7 @@ class TestCore(util.HalibotTestCase):
 
 		foo = halibot.Message(body='foo')
 		bar = halibot.Message(body='bar')
-		baz = halibot.Message(body='baz')
+		baz = halibot.Message(body='baz', origin='glub_agent')
 
 		agent.connect(mod)
 		agent.dispatch(foo)
@@ -63,6 +63,12 @@ class TestCore(util.HalibotTestCase):
 		self.assertEqual(foo.body, mod.received[0].body)
 		self.assertEqual(bar.body, mod.received[1].body)
 		self.assertEqual(baz.body, mod.received[2].body)
+		self.assertEqual('stub_mod', mod.received[0].target)
+		self.assertEqual('stub_mod', mod.received[1].target)
+		self.assertEqual('stub_mod', mod.received[2].target)
+		self.assertEqual('stub_agent', mod.received[0].origin)
+		self.assertEqual('stub_agent', mod.received[1].origin)
+		self.assertEqual('glub_agent', mod.received[2].origin)
 
 if __name__ == '__main__':
 	unittest.main()
