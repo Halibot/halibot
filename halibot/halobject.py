@@ -30,6 +30,10 @@ class HalObject():
 		pass
 
 	def send_to(self, msg, dests):
+		# Set origin for those who have not set it manually
+		if msg.origin == None:
+			msg.origin = self.name
+
 		for ri in dests:
 			name = ri.split('/')[0]
 			to = self._hal.get_object(name)
