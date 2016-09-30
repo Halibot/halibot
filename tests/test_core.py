@@ -64,6 +64,18 @@ class TestCore(util.HalibotTestCase):
 		self.assertEqual(bar.body, mod.received[1].body)
 		self.assertEqual(baz.body, mod.received[2].body)
 
+	def test_message(self):
+		msg = halibot.Message()
+
+		msg.author = 'test'
+		self.assertEqual(msg.author, 'test')
+		self.assertEqual(msg.author.id, '')
+		msg.author.id = 'test2'
+		self.assertEqual(msg.author, 'test')
+		self.assertEqual(msg.author.id, 'test2')
+
+		msg.author = 'foobar'
+		self.assertEqual(msg.author.id, '')
+
 if __name__ == '__main__':
 	unittest.main()
-
