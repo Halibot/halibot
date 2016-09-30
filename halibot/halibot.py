@@ -131,7 +131,6 @@ class Halibot():
 	def get_package(self, name):
 		for p in self.config['package-path']:
 			path = p.replace('/', '.') + '.' + name.replace('/', '.')
-			print(path)
 			mod = importlib.import_module(path)
 			if mod != None:
 				return mod
