@@ -4,7 +4,7 @@
 #
 import json
 import threading
-import sys
+import sys, importlib
 from queue import Queue,Empty
 from .halmodule import HalModule
 from .halagent import HalAgent
@@ -64,8 +64,23 @@ class Halibot():
 		with open("config.json","r") as f:
 			self.config = json.loads(f.read())
 
+			# Deprecated; remove with 1.0
 			self.agent_loader = Loader(self.config["package-path"], HalAgent)
 			self.module_loader = Loader(self.config["package-path"], HalModule)
+
+
+	def _get_class_from_package(self, pkgname, clsname):
+		pkg = self.get_package(pkgname)
+		if pkg == None:
+			self.log.error("Cannot find package {}!".format(pkgname))
+			return None
+
+		obj = getattr(pkg, clsname, None)
+		if obj == None:
+			self.log.error("Cannot find class {} in package {}!".format(clsname, pkgname))
+			return None
+
+		return obj
 
 	def _instantiate_agents(self):
 		inst = self.config["agent-instances"]
@@ -74,7 +89,16 @@ class Halibot():
 			# TODO include directive
 
 			conf = inst[k]
-			obj = self.agent_loader.get(conf["of"])
+			split = conf["of"].split(":")
+
+			if len(split) == 1:
+				# deprecated; remove with 1.0
+				obj = self.agent_loader.get(conf["of"])
+			elif len(split) == 2:
+				obj = self._get_class_from_package(split[0], split[1])
+			else:
+				self.log.error("Invalid class identifier {}, must contain only 1 ':'".format(conf["of"]))
+				continue
 
 			self.add_agent_instance(k, obj(self, conf))
 
@@ -85,7 +109,16 @@ class Halibot():
 			# TODO include directive
 
 			conf = inst[k]
-			obj = self.module_loader.get(conf["of"])
+			split = conf["of"].split(":")
+
+			if len(split) == 1:
+				# deprecated; remove with 1.0
+				obj = self.module_loader.get(conf["of"])
+			elif len(split) == 2:
+				obj = self._get_class_from_package(split[0], split[1])
+			else:
+				self.log.error("Invalid class identifier {}, must contain only 1 ':'".format(conf["of"]))
+				continue
 
 			self.add_module_instance(k, obj(self, conf))
 
@@ -93,6 +126,15 @@ class Halibot():
 		# TODO priority?
 		if name in self.modules: return self.modules[name]
 		if name in self.agents: return self.agents[name]
+		return None
+
+	def get_package(self, name):
+		for p in self.config['package-path']:
+			path = p.replace('/', '.') + '.' + name.replace('/', '.')
+			print(path)
+			mod = importlib.import_module(path)
+			if mod != None:
+				return mod
 		return None
 
 	# TODO: Reload a class, and restart all modules of that class

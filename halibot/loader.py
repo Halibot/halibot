@@ -1,3 +1,4 @@
+# Deprecated; delete this class with 1.0
 #
 # Loader class
 #   Handles loading of items (namely modules or agents)
