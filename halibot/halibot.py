@@ -64,8 +64,8 @@ class Halibot():
 		with open("config.json","r") as f:
 			self.config = json.loads(f.read())
 
-			self.agent_loader = Loader(self.config["agent-path"], HalAgent)
-			self.module_loader = Loader(self.config["module-path"], HalModule)
+			self.agent_loader = Loader(self.config["package-path"], HalAgent)
+			self.module_loader = Loader(self.config["package-path"], HalModule)
 
 	def _instantiate_agents(self):
 		inst = self.config["agent-instances"]
