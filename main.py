@@ -6,6 +6,12 @@ import logging
 import sys
 import os
 
+noGit = False
+try:
+	from git import Repo
+except ImportError:
+	noGit = True
+
 # Defining the Halibot instance in global space so running with -i
 #  makes it interactive
 bot = None
@@ -16,9 +22,10 @@ def h_help(*args):
 Halibot - The world's greatest saltwater chat bot!
 
 Commands:
-	init	Initialize a new local halibot instance
-	run	Run the local halibot instance
-	help	Print this help text :)
+	init    Initialize a new local halibot instance
+	run     Run the local halibot instance
+	fetch   Fetch remote packages by name
+	help    Print this help text :)
 
 ''')
 	sys.exit(0)
@@ -44,6 +51,7 @@ def h_init(*args):
 
 	config = {
 		"package-path": ["packages"],
+		"repos": ["https://github.com/halibot-extra/"],
 		"agent-instances": {},
 		"module-instances": {}
 	}
@@ -69,10 +77,51 @@ def h_run(*args):
 	bot = halibot.Halibot()
 	bot.start(block=True)
 
+def h_fetch(*args):
+	# In order to access the config easily
+	bot = halibot.Halibot()
+	bot._load_config()
+
+	# Error checking
+	if noGit:
+		print("The git python module is not installed, I cannot clone git repos.")
+		return
+
+	if not args:
+		print("As you have asked me to fetch nothing, I shall fetch nothing.")
+		return
+
+	if not "repos" in bot.config:
+		print("There are no repos specified in the config.json.")
+		print("I have nothing to fetch from!")
+		return
+
+	# Try to fetch each requested package
+	for name in args:
+		# Install to the first package path by default
+		dst = os.path.join(bot.config["package-path"][0], name)
+
+		success = False
+		for r in bot.config["repos"]:
+			src = r + name
+			try:
+				print("Trying to git clone '{}'...".format(src))
+				Repo.clone_from(src, dst)
+				print("\033[92mSuccessfully fetched '{}' into '{}'.\033[0m".format(name, dst))
+				success = True
+				break
+			except Exception as e:
+				print(e)
+
+		if not success:
+			print("\033[91mFailed to fetch '{}'!\033[0m".format(name))
+
+
 arg_map = {
 	"help": h_help,
 	"init": h_init,
 	"run": h_run,
+	"fetch": h_fetch
 }
 
 # TODO: Rewrite this with argparse or something
