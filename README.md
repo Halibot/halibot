@@ -14,23 +14,29 @@ Check out our [sweet site](https://halibot.github.io)!
 Currently, Halibot is only available from this repo.
 
 ```
-git clone http://www.github.com/halibot/halibot
+git clone https://github.com/halibot/halibot
 ```
+
+Extra packages are available at `https://github.com/halibot-extra`.
 
 ## Basic Usage
 
 In order for Halibot to run, you need a config.json (see the next section(s) for an example config and explanation).
-From the installation directory (after the clone, `cd halibot`), execute any of the following:
-```
-# Should work in most cases
-./main.py
 
-# If the above fails:
-python3 main.py
+To create a default config, you can execute:
+
+```
+./main.py init
+```
+
+To actually run the bot, you can execute
+```
+./main.py run
 
 # If you want an interactive python REPL to play with the bot:
-python3 -i main.py
+python3 -i main.py run
 ```
+If simply doing `./main.py` fails, something along the lines of `python3 main.py` should work.
 
 ## Configuration
 
@@ -42,18 +48,13 @@ Halibot uses valid python JSON, and will throw errors if the `config.json` does 
 
 ```json
 {
-
-  "agent-path": [
-    "agents"
-  ],
-
-  "module-path": [
-    "modules"
+  "package-path": [
+    "packages"
   ],
 
   "agent-instances": {
     "irc0": {
-      "of": "irc",
+      "of": "irc:IrcAgent",
       "channel": "##example",
       "nickname": "ExampleName"
     }
@@ -61,22 +62,24 @@ Halibot uses valid python JSON, and will throw errors if the `config.json` does 
 
   "module-instances": {
     "hello0": {
-      "of": "hello"
+      "of": "hello:Hello"
     }
   }
 }
 ```
 
-### `agent-path` and `module-path`
+### Packages
 
-The `module-path` and `agent-path` keys are an array of directories to look for modules or agents.
-Simply put, these should be a list of strings pointing to where Halibot should look for the fun things.
-In the above example, the directories `modules` and `agents` are used.
-These are relative paths from where Halibot is being run.
-Alternatively, you could specify `/usr/lib/halibot/modules`, and that would be an absolute path.
+A halibot *package* is, simply put, a collection of code.
+Each package can contain a collection of module and agent classes, which can be instatied inside the `module-instances` and `agent-instances` section of the config.
 
-Essentially, these should be where you install the extra modules or agents.
-Halibot ships with an example IRC agent, and an example "Hello world!" module, so if you run Halibot from the installation (repo) directory, the above paths should be valid.
+The `package-path` key is a list of path strings informing halibot where to look for packages.
+
+In the above example, the single directory `packages` is used.
+This path is relative to where Halibot is being run from.
+Alternatively, you could specify the absolute path `/usr/lib/halibot/modules`.
+
+Halibot ships with an example IRC agent, and an example "Hello world!" module, so if you run Halibot from the installation (repo) directory, the above config should be valid.
 
 Jump to the section titled **Modules and Agents** below for more information on how these function in the larger Halibot system.
 
@@ -90,7 +93,7 @@ So, in the above example in `agent-instances`, we mapped the following:
 
 ```json
 "irc0": {
-  "of": "irc",
+  "of": "irc:IrcAgent",
   "channel": "##example",
   "nickname": "ExampleName"
 }
@@ -98,14 +101,15 @@ So, in the above example in `agent-instances`, we mapped the following:
 
 Here, `irc0` is the name, and the object is its configuration.
 Agents and modules may specify what configuration is required, but **ALL** objects need and `of` key, which refers to *what* it actually is.
-Again, in the above example, `irc0`'s `of` is `irc`.
-This tells Halibot to use agent specified in the `irc` directory in `agent-path`. (in the above example, should be `./agents/irc`)
+The component of the `of` field before the colon (`:`) specifies the name of the package in which the class the instance is of is located in,
+while the component after the colon is the python name of the class within that package.
 
 Modules operate in the same sense.
-The `hello0` instance listed in the `module-instances` object refers to the module in the `./modules/hello` directory.
 
 #### Per-agent/module configuration
 
 Some modules/agents may require certain key-value pairs to be defined to operate correctly.
-For example, an `irc` agent needs a `nickname` string, to use for connection.
+For example, an `irc:IrcAgent` agent needs a `nickname` string, to use for connection.
 This is only for this particular agent instance, so in theory, another instance could be spun up with a different name, and specify a different nickname.
+
+These keys are module/agent specific, so see the individual documentation for a package on what fields are allowed.
