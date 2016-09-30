@@ -37,28 +37,23 @@ def h_init(*args):
 			if not r.lower() in ("y", "yes", "yolo"):
 				return
 
-	# NOTE: Update for packages
-	if not os.path.exists("modules"):
-		os.mkdir(os.path.join("modules"))
-		print("Created '{}'".format(os.path.join(path,"modules")))
-	if not os.path.exists("agents"):
-		os.mkdir(os.path.join("agents"))
-		print("Created '{}'".format(os.path.join(path,"agents")))
-
 	if os.path.exists(os.path.join(path, "config.json")):
 		r = input("A 'config.json' already exists, overwrite with new? [y/N]: ")
 		if not r.lower() in ("y", "yes", "yolo"):
 			return
 
 	config = {
-		"agent-path": ["agents"],
-		"module-path": ["modules"],
+		"package-path": ["packages"],
 		"agent-instances": {},
 		"module-instances": {}
 	}
 
 	with open(os.path.join(path,"config.json"),"w") as f:
 		f.write(json.dumps(config, sort_keys=True, indent=4))
+
+	if not os.path.exists("packages"):
+		os.mkdir(os.path.join("packages"))
+		print("Created '{}'".format(os.path.join(path,"packages")))
 
 	print("Halibot instance has been initialized!")
 	print("\nUse '{} run' to run the instance, or edit 'config.json' to add module/agent instances")
