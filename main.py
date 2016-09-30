@@ -22,10 +22,12 @@ def h_help(*args):
 Halibot - The world's greatest saltwater chat bot!
 
 Commands:
-	init    Initialize a new local halibot instance
-	run     Run the local halibot instance
-	fetch   Fetch remote packages by name
-	help    Print this help text :)
+	init        Initialize a new local halibot instance
+	run         Run the local halibot instance
+	fetch       Fetch remote packages by name
+	help        Print this help text :)
+	add-module  Add a module to the local configuration
+	add-agent   Add a agent to the local configuration
 
 ''')
 	sys.exit(0)
@@ -116,12 +118,78 @@ def h_fetch(*args):
 		if not success:
 			print("\033[91mFailed to fetch '{}'!\033[0m".format(name))
 
+def h_add_agent(*args):
+	_h_add("agent-instances", args)
+
+def h_add_module(*args):
+	_h_add("module-instances", args)
+
+def _h_add(destkey, args):
+	if not args:
+		print("Nothing to add.")
+
+	# In order to access the config easily
+	bot = halibot.Halibot()
+	bot._load_config()
+
+	for clspath in args:
+		# Validate that it is actually an object
+		split = clspath.split(":")
+		if len(split) != 2:
+			print("Invalid class path '{}', expected exactly 1 colon (:).".format(cls))
+			continue
+
+		pkg = bot.get_package(split[0])
+		if pkg == None:
+			print("Cannot find package '{}'.".format(split[0]))
+			continue
+
+		cls = getattr(pkg, split[1], None)
+		if cls == None:
+			print("Class '{}' does not exist on package '{}'.".format(split[1], split[0]))
+			continue
+
+		conf = { "of": clspath }
+		name = input("Enter instance name: ")
+
+		for key in getattr(cls, "options", {}):
+			opt = cls.options[key]
+
+			prompt = opt["prompt"]
+			if "default" in opt:
+				prompt += " [" + str(opt["default"]) + "]: "
+			else:
+				prompt += ": "
+
+			val = input(prompt)
+			if val == '':
+				if "default" in opt:
+					val = opt["default"]
+				else:
+					# Don't write this key
+					continue
+
+			if opt["type"] == "int":
+				conf[key] = int(val)
+			elif opt["type"] == "float":
+				conf[key] = float(val)
+			elif opt["type"] == "bool":
+				conf[key] = (val.lower() == "true")
+			else:
+				conf[key] = val
+
+		bot.config[destkey][name] = conf
+
+	with open("config.json","w") as f:
+		f.write(json.dumps(bot.config, sort_keys=True, indent=4))
 
 arg_map = {
 	"help": h_help,
 	"init": h_init,
 	"run": h_run,
-	"fetch": h_fetch
+	"fetch": h_fetch,
+	"add-agent": h_add_agent,
+	"add-module": h_add_module,
 }
 
 # TODO: Rewrite this with argparse or something
