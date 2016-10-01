@@ -5,6 +5,10 @@ import json
 import logging
 import sys
 import os
+import zipfile
+import tarfile
+import urllib.request
+import io
 
 noGit = False
 try:
@@ -53,7 +57,7 @@ def h_init(*args):
 
 	config = {
 		"package-path": ["packages"],
-		"repos": ["https://github.com/halibot-extra/"],
+		"repos": ["git://github.com/halibot-extra/{}"],
 		"agent-instances": {},
 		"module-instances": {}
 	}
@@ -85,10 +89,6 @@ def h_fetch(*args):
 	bot._load_config()
 
 	# Error checking
-	if noGit:
-		print("The git python module is not installed, I cannot clone git repos.")
-		return
-
 	if not args:
 		print("As you have asked me to fetch nothing, I shall fetch nothing.")
 		return
@@ -105,10 +105,28 @@ def h_fetch(*args):
 
 		success = False
 		for r in bot.config["repos"]:
-			src = r + name
+			src = r.format(name)
 			try:
-				print("Trying to git clone '{}'...".format(src))
-				Repo.clone_from(src, dst)
+				if src.startswith("git://"):
+					if noGit:
+						raise Exception("The git module is not installed, I cannot clone git repos.")
+					print("Trying to git clone '{}'...".format(src))
+					Repo.clone_from(src, dst)
+				elif src.endswith(".zip"):
+					print("Trying to extract zip from '{}'...".format(src))
+					bio = io.BytesIO(urllib.request.urlopen(src).readall())
+					z = zipfile.ZipFile(bio)
+					os.mkdir(dst)
+					z.extractall(dst)
+				elif src.endswith( (".tar", ".tar.gz", ".tar.bz", ".tar.xz" ) ):
+					print("Trying to extract tarball from '{}'...".format(src))
+					bio = io.BytesIO(urllib.request.urlopen(src).readall())
+					tar = tarfile.open(mode="r:*", fileobj=bio)
+					os.mkdir(dst)
+					tar.extractall(dst)
+				else:
+					raise Exception("I do not know how to handle the path '{}'".format(src))
+
 				print("\033[92mSuccessfully fetched '{}' into '{}'.\033[0m".format(name, dst))
 				success = True
 				break
