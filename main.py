@@ -9,6 +9,7 @@ import zipfile
 import tarfile
 import urllib.request
 import io
+import argparse
 
 noGit = False
 try:
@@ -20,37 +21,19 @@ except ImportError:
 #  makes it interactive
 bot = None
 
-def h_help(*args):
-	print(
-'''
-Halibot - The world's greatest saltwater chat bot!
+def h_init(args):
+	confpath = os.path.join(args.path, "config.json")
+	pkgpath  = os.path.join(args.path, "packages")
 
-Commands:
-	init        Initialize a new local halibot instance
-	run         Run the local halibot instance
-	fetch       Fetch remote packages by name
-	help        Print this help text :)
-	add-module  Add a module to the local configuration
-	add-agent   Add a agent to the local configuration
-
-''')
-	sys.exit(0)
-
-def h_init(*args):
-	if not args:
-		path = '.'
-	else:
-		path = args[0]
-
-	if not os.path.exists(path):
-		os.mkdir(path)
+	if not os.path.exists(args.path):
+		os.mkdir(args.path)
 	else: # Dir does exist, ensure clear
-		if os.listdir(path):
+		if os.listdir(args.path):
 			r = input("Directory not empty, are you sure you want to init here? [y/N]: ")
 			if not r.lower() in ("y", "yes", "yolo"):
 				return
 
-	if os.path.exists(os.path.join(path, "config.json")):
+	if os.path.exists(confpath):
 		r = input("A 'config.json' already exists, overwrite with new? [y/N]: ")
 		if not r.lower() in ("y", "yes", "yolo"):
 			return
@@ -62,17 +45,17 @@ def h_init(*args):
 		"module-instances": {}
 	}
 
-	with open(os.path.join(path,"config.json"),"w") as f:
+	with open(confpath, "w") as f:
 		f.write(json.dumps(config, sort_keys=True, indent=4))
 
-	if not os.path.exists("packages"):
-		os.mkdir(os.path.join("packages"))
-		print("Created '{}'".format(os.path.join(path,"packages")))
+	if not os.path.exists(pkgpath):
+		os.mkdir(pkgpath)
+		print("Created '{}'".format(pkgpath))
 
 	print("Halibot instance has been initialized!")
 	print("\nUse '{} run' to run the instance, or edit 'config.json' to add module/agent instances")
 
-def h_run(*args):
+def h_run(args):
 	global bot
 	# Maybe do the config loading here?
 	if not os.path.exists("config.json"):
@@ -83,23 +66,19 @@ def h_run(*args):
 	bot = halibot.Halibot()
 	bot.start(block=True)
 
-def h_fetch(*args):
+def h_fetch(args):
 	# In order to access the config easily
 	bot = halibot.Halibot()
 	bot._load_config()
 
 	# Error checking
-	if not args:
-		print("As you have asked me to fetch nothing, I shall fetch nothing.")
-		return
-
 	if not "repos" in bot.config:
 		print("There are no repos specified in the config.json.")
 		print("I have nothing to fetch from!")
 		return
 
 	# Try to fetch each requested package
-	for name in args:
+	for name in args.packages:
 		# Install to the first package path by default
 		dst = os.path.join(bot.config["package-path"][0], name)
 
@@ -136,25 +115,22 @@ def h_fetch(*args):
 		if not success:
 			print("\033[91mFailed to fetch '{}'!\033[0m".format(name))
 
-def h_add_agent(*args):
+def h_add_agent(args):
 	_h_add("agent-instances", args)
 
-def h_add_module(*args):
+def h_add_module(args):
 	_h_add("module-instances", args)
 
 def _h_add(destkey, args):
-	if not args:
-		print("Nothing to add.")
-
 	# In order to access the config easily
 	bot = halibot.Halibot()
 	bot._load_config()
 
-	for clspath in args:
+	for clspath in args.things:
 		# Validate that it is actually an object
 		split = clspath.split(":")
 		if len(split) != 2:
-			print("Invalid class path '{}', expected exactly 1 colon (:).".format(cls))
+			print("Invalid class path '{}', expected exactly 1 colon (:).".format(clspath))
 			continue
 
 		pkg = bot.get_package(split[0])
@@ -201,8 +177,7 @@ def _h_add(destkey, args):
 	with open("config.json","w") as f:
 		f.write(json.dumps(bot.config, sort_keys=True, indent=4))
 
-arg_map = {
-	"help": h_help,
+subcmds = {
 	"init": h_init,
 	"run": h_run,
 	"fetch": h_fetch,
@@ -210,9 +185,28 @@ arg_map = {
 	"add-module": h_add_module,
 }
 
-# TODO: Rewrite this with argparse or something
+# Setup argument parsing
+parser = argparse.ArgumentParser(description="The world's greatest saltwater chat bot!")
 
-if len(sys.argv) > 1 and sys.argv[1] in arg_map:
-	arg_map.get(sys.argv[1])(*sys.argv[2:])
+sub = parser.add_subparsers(title="commands", dest="cmd", metavar="COMMAND")
+
+init = sub.add_parser("init", help="initialize a new local halibot instance")
+init.add_argument("path", help="directory path to initialize the halibot instance in", nargs="?", default=".")
+
+run = sub.add_parser("run", help="run the local halibot instance")
+
+fetch = sub.add_parser("fetch", help="fetch remote packages")
+fetch.add_argument("packages", help="name of package to fetch", nargs="+", metavar="package")
+
+add_agent = sub.add_parser("add-agent", help="add agents to the local halibot instance")
+add_agent.add_argument("things", help="agent class path to add", nargs="+", metavar="agent")
+
+add_module = sub.add_parser("add-module", help="add modules to the local halibot instance")
+add_module.add_argument("things", help="module class path to add", nargs="+", metavar="module")
+
+args = parser.parse_args()
+
+if args.cmd != None:
+	subcmds[args.cmd](args)
 else:
-	h_help()
+	parser.print_help()
