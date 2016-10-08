@@ -10,16 +10,13 @@ import tarfile
 import urllib.request
 import io
 import argparse
+import code
 
 noGit = False
 try:
 	from git import Repo
 except ImportError:
 	noGit = True
-
-# Defining the Halibot instance in global space so running with -i
-#  makes it interactive
-bot = None
 
 def h_init(args):
 	confpath = os.path.join(args.path, "config.json")
@@ -56,7 +53,6 @@ def h_init(args):
 	print("\nUse '{} run' to run the instance, or edit 'config.json' to add module/agent instances")
 
 def h_run(args):
-	global bot
 	# Maybe do the config loading here?
 	if not os.path.exists("config.json"):
 		print("Failed to start: No halibot configuration found in the current directory!")
@@ -65,6 +61,15 @@ def h_run(args):
 	logging.basicConfig(level=logging.DEBUG)
 	bot = halibot.Halibot()
 	bot.start(block=True)
+
+	if args.interactive:
+		local = {
+			"bot": bot,
+			"halibot": halibot,
+		}
+		code.interact(banner="Halibot welcomes you!", local=local)
+		bot.shutdown()
+		print("Halibot bides you farewell.")
 
 def h_fetch(args):
 	# In order to access the config easily
@@ -177,36 +182,40 @@ def _h_add(destkey, args):
 	with open("config.json","w") as f:
 		f.write(json.dumps(bot.config, sort_keys=True, indent=4))
 
-subcmds = {
-	"init": h_init,
-	"run": h_run,
-	"fetch": h_fetch,
-	"add-agent": h_add_agent,
-	"add-module": h_add_module,
-}
 
-# Setup argument parsing
-parser = argparse.ArgumentParser(description="The world's greatest saltwater chat bot!")
+if __name__ == "__main__":
+	subcmds = {
+		"init": h_init,
+		"run": h_run,
+		"fetch": h_fetch,
+		"add-agent": h_add_agent,
+		"add-module": h_add_module,
+	}
 
-sub = parser.add_subparsers(title="commands", dest="cmd", metavar="COMMAND")
+	# Setup argument parsing
+	parser = argparse.ArgumentParser(description="The world's greatest saltwater chat bot!")
 
-init = sub.add_parser("init", help="initialize a new local halibot instance")
-init.add_argument("path", help="directory path to initialize the halibot instance in", nargs="?", default=".")
+	sub = parser.add_subparsers(title="commands", dest="cmd", metavar="COMMAND")
 
-run = sub.add_parser("run", help="run the local halibot instance")
+	init = sub.add_parser("init", help="initialize a new local halibot instance")
+	init.add_argument("path", help="directory path to initialize the halibot instance in", nargs="?", default=".")
 
-fetch = sub.add_parser("fetch", help="fetch remote packages")
-fetch.add_argument("packages", help="name of package to fetch", nargs="+", metavar="package")
+	run = sub.add_parser("run", help="run the local halibot instance")
+	run.add_argument("-i", "--interactive", help="enter a python shell after starting halibot", action="store_true", required=False)
 
-add_agent = sub.add_parser("add-agent", help="add agents to the local halibot instance")
-add_agent.add_argument("things", help="agent class path to add", nargs="+", metavar="agent")
+	fetch = sub.add_parser("fetch", help="fetch remote packages")
+	fetch.add_argument("packages", help="name of package to fetch", nargs="+", metavar="package")
 
-add_module = sub.add_parser("add-module", help="add modules to the local halibot instance")
-add_module.add_argument("things", help="module class path to add", nargs="+", metavar="module")
+	add_agent = sub.add_parser("add-agent", help="add agents to the local halibot instance")
+	add_agent.add_argument("things", help="agent class path to add", nargs="+", metavar="agent")
 
-args = parser.parse_args()
+	add_module = sub.add_parser("add-module", help="add modules to the local halibot instance")
+	add_module.add_argument("things", help="module class path to add", nargs="+", metavar="module")
 
-if args.cmd != None:
-	subcmds[args.cmd](args)
-else:
-	parser.print_help()
+	args = parser.parse_args()
+
+	# Try to run a subcommand
+	if args.cmd != None:
+		subcmds[args.cmd](args)
+	else:
+		parser.print_help()
