@@ -3,7 +3,7 @@ from .jsdict import jsdict
 
 # Deprecated, remove at 1.0
 class Context():
-	
+
 	def __init__(self, **kwargs):
 		self.agent = kwargs.get('agent', None)
 		self.protocol = kwargs.get('protocol', None)
@@ -26,12 +26,26 @@ class Context():
 
 class Message():
 
+	class Author(str):
+		def __init__(self, a, id=""):
+			self.id = id
+			self.name = str(a) if a else ""
+		def __str__(self):
+			return self.name
+		def __repr__(self):
+			return self.name
+		def __setattr__(self, key, value):
+			if key in ("id", "name"):
+				object.__setattr__(self, key, value)
+		def __getattr__(self, key):
+			return str(object.__getattr__(self,key))
+
 	def __init__(self, **kwargs):
 		self.log = logging.getLogger(self.__class__.__name__)
 
 		self.body = kwargs.get('body', None)
 		self.type = kwargs.get('type', 'simple')
-		self.author = kwargs.get('author', None)
+		self.author = self.Author(kwargs.get('author', None))
 		self.origin = kwargs.get('origin', None)
 		self.misc = kwargs.get('misc', jsdict())
 		self.target = kwargs.get('target', '')
@@ -58,6 +72,10 @@ class Message():
 			ls = value.split('/')
 			object.__setattr__(self.context, 'agent', ls[0])
 			object.__setattr__(self.context, 'whom', '/'.join(ls[1:]))
+
+		if key == 'author':
+			object.__setattr__(self, key, self.Author(value))
+			return
 
 		object.__setattr__(self, key, value)
 

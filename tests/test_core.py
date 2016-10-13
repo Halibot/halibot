@@ -70,6 +70,18 @@ class TestCore(util.HalibotTestCase):
 		self.assertEqual('stub_agent', mod.received[1].origin)
 		self.assertEqual('glub_agent', mod.received[2].origin)
 
+	def test_message(self):
+		msg = halibot.Message()
+
+		msg.author = 'test'
+		self.assertEqual(msg.author, 'test')
+		self.assertEqual(msg.author.id, '')
+		msg.author.id = 'test2'
+		self.assertEqual(msg.author, 'test')
+		self.assertEqual(msg.author.id, 'test2')
+
+		msg.author = 'foobar'
+		self.assertEqual(msg.author.id, '')
+
 if __name__ == '__main__':
 	unittest.main()
-
