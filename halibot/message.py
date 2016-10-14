@@ -32,6 +32,7 @@ class Message():
 		self.body = kwargs.get('body', None)
 		self.type = kwargs.get('type', 'simple')
 		self.author = kwargs.get('author', None)
+		self.identity = kwargs.get('identity', None)
 		self.origin = kwargs.get('origin', None)
 		self.misc = kwargs.get('misc', jsdict())
 		self.target = kwargs.get('target', '')
