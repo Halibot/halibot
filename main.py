@@ -120,7 +120,19 @@ def h_fetch(args):
 		if not success:
 			print("\033[91mFailed to fetch '{}'!\033[0m".format(name))
 
+def h_list_packages(args):
+	bot = halibot.Halibot()
+	bot._load_config()
 
+	pkgs = []
+	for path in bot.config.get("package-path"):
+		pkgs = pkgs + os.listdir(path)
+	pkgs.sort()
+
+	print("\nInstalled packages:")
+	for p in pkgs:
+		print("  {}".format(p))
+	print("")
 
 def h_add(args):
 	# In order to access the config easily
@@ -196,6 +208,7 @@ if __name__ == "__main__":
 		"run": h_run,
 		"fetch": h_fetch,
 		"add": h_add,
+		"packages": h_list_packages,
 	}
 
 	# Setup argument parsing
@@ -218,6 +231,7 @@ if __name__ == "__main__":
 	addtype.add_argument("-a", "--agent", dest="destkey", action="store_const", const="agent-instances", help="add instances as agents")
 	addtype.add_argument("-m", "--module", dest="destkey", action="store_const", const="module-instances", help="add instances as modules")
 
+	list_packages = sub.add_parser("packages", help="list all installed packages")
 
 	args = parser.parse_args()
 
