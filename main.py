@@ -163,8 +163,8 @@ def h_add(args):
 	for clspath in args.things:
 		# Validate that it is actually an object
 		split = clspath.split(":")
-		if len(split) != 2:
-			print("Invalid class path '{}', expected exactly 1 colon (:).".format(clspath))
+		if len(split) > 2:
+			print("Invalid class path '{}', expected no more than 1 colon (:).".format(clspath))
 			continue
 
 		pkg = bot.get_package(split[0])
@@ -172,10 +172,17 @@ def h_add(args):
 			print("Cannot find package '{}'.".format(split[0]))
 			continue
 
-		cls = getattr(pkg, split[1], None)
-		if cls == None:
-			print("Class '{}' does not exist on package '{}'.".format(split[1], split[0]))
-			continue
+		if len(split) == 1:
+			if not hasattr(pkg, "Default"):
+				print("Package '{}' has no default class, must specify the class to add explicitly.".format(split[0]))
+				continue
+			cls = pkg.Default
+			clspath += ":Default"
+		else:
+			cls = getattr(pkg, split[1], None)
+			if cls == None:
+				print("Class '{}' does not exist on package '{}'.".format(split[1], split[0]))
+				continue
 
 		if args.destkey:
 			destkey = args.destkey
