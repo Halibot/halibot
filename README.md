@@ -15,6 +15,8 @@ Currently, Halibot is only available from this repo.
 
 ```
 git clone https://github.com/halibot/halibot
+cd halibot
+./install.sh
 ```
 
 Extra packages are available at `https://github.com/halibot-extra`.
@@ -26,17 +28,16 @@ In order for Halibot to run, you need a config.json (see the next section(s) for
 To create a default config, you can execute:
 
 ```
-./main.py init
+halibot init
 ```
 
-To actually run the bot, you can execute
+To actually run the bot, you can execute:
 ```
-./main.py run
+halibot run
 
 # If you want an interactive python REPL to play with the bot:
-python3 -i main.py run
+halibot run -i
 ```
-If simply doing `./main.py` fails, something along the lines of `python3 main.py` should work.
 
 ## Configuration
 
