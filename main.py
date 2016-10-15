@@ -120,13 +120,9 @@ def h_fetch(args):
 		if not success:
 			print("\033[91mFailed to fetch '{}'!\033[0m".format(name))
 
-def h_add_agent(args):
-	_h_add("agent-instances", args)
 
-def h_add_module(args):
-	_h_add("module-instances", args)
 
-def _h_add(destkey, args):
+def h_add(args):
 	# In order to access the config easily
 	bot = halibot.Halibot()
 	bot._load_config()
@@ -147,6 +143,17 @@ def _h_add(destkey, args):
 		if cls == None:
 			print("Class '{}' does not exist on package '{}'.".format(split[1], split[0]))
 			continue
+
+		if args.destkey:
+			destkey = args.destkey
+		else:
+			if issubclass(cls, halibot.HalModule):
+				destkey = "module-instances"
+			elif issubclass(cls, halibot.HalAgent):
+				destkey = "agent-instances"
+			else:
+				print("Cannot determine if '{}' is a module or agent, use '-m' or '-a'.")
+				continue
 
 		conf = { "of": clspath }
 		name = input("Enter instance name: ")
@@ -188,8 +195,7 @@ if __name__ == "__main__":
 		"init": h_init,
 		"run": h_run,
 		"fetch": h_fetch,
-		"add-agent": h_add_agent,
-		"add-module": h_add_module,
+		"add": h_add,
 	}
 
 	# Setup argument parsing
@@ -206,11 +212,12 @@ if __name__ == "__main__":
 	fetch = sub.add_parser("fetch", help="fetch remote packages")
 	fetch.add_argument("packages", help="name of package to fetch", nargs="+", metavar="package")
 
-	add_agent = sub.add_parser("add-agent", help="add agents to the local halibot instance")
-	add_agent.add_argument("things", help="agent class path to add", nargs="+", metavar="agent")
+	add = sub.add_parser("add", help="add agents or modules to the local halibot instance")
+	add.add_argument("things", help="path to class to add", nargs="+", metavar="name")
+	addtype = add.add_mutually_exclusive_group()
+	addtype.add_argument("-a", "--agent", dest="destkey", action="store_const", const="agent-instances", help="add instances as agents")
+	addtype.add_argument("-m", "--module", dest="destkey", action="store_const", const="module-instances", help="add instances as modules")
 
-	add_module = sub.add_parser("add-module", help="add modules to the local halibot instance")
-	add_module.add_argument("things", help="module class path to add", nargs="+", metavar="module")
 
 	args = parser.parse_args()
 
