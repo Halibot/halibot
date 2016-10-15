@@ -42,7 +42,7 @@ class Halibot():
 			self._instantiate_agents()
 			self._instantiate_modules()
 			if self.use_auth:
-				self.auth.load_auth(self.config.get("auth-path","permissions.json"))
+				self.auth.load_perms(self.config.get("auth-path","permissions.json"))
 
 	def shutdown(self):
 		self.log.info("Shutting down halibot...");
