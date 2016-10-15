@@ -201,6 +201,23 @@ def h_add(args):
 	with open("config.json","w") as f:
 		f.write(json.dumps(bot.config, sort_keys=True, indent=4))
 
+def h_rm(args):
+	# In order to access the config easily
+	bot = halibot.Halibot()
+	bot._load_config()
+
+	for name in args.names:
+		if name in bot.config["agent-instances"]:
+			bot.config["agent-instances"].pop(name)
+		elif name in bot.config["module-instances"]:
+			bot.config["module-instances"].pop(name)
+		else:
+			print("No such object '{}'".format(name))
+			continue
+		print("Removed '{}'.".format(name))
+
+	with open("config.json", "w") as f:
+		f.write(json.dumps(bot.config, sort_keys=True, indent=4))
 
 if __name__ == "__main__":
 	subcmds = {
@@ -208,6 +225,7 @@ if __name__ == "__main__":
 		"run": h_run,
 		"fetch": h_fetch,
 		"add": h_add,
+		"rm": h_rm,
 		"packages": h_list_packages,
 	}
 
@@ -226,10 +244,13 @@ if __name__ == "__main__":
 	fetch.add_argument("packages", help="name of package to fetch", nargs="+", metavar="package")
 
 	add = sub.add_parser("add", help="add agents or modules to the local halibot instance")
-	add.add_argument("things", help="path to class to add", nargs="+", metavar="name")
+	add.add_argument("things", help="path to class to add", nargs="+", metavar="class")
 	addtype = add.add_mutually_exclusive_group()
 	addtype.add_argument("-a", "--agent", dest="destkey", action="store_const", const="agent-instances", help="add instances as agents")
 	addtype.add_argument("-m", "--module", dest="destkey", action="store_const", const="module-instances", help="add instances as modules")
+
+	rm = sub.add_parser("rm", help="remove agents or modules from the local halibot instance")
+	rm.add_argument("names", help="names of agents or modules to remove", nargs="+", metavar="name")
 
 	list_packages = sub.add_parser("packages", help="list all installed packages")
 
