@@ -18,4 +18,4 @@ class HalModule(HalObject):
 		self.send_to(msg, [ msg.origin ])
 
 	def hasPermission(self, msg, perm):
-		return self._hal.auth.hasPermission(msg.origin, msg.author, perm)
+		return self._hal.auth.hasPermission(msg.origin, msg.identity, perm)
