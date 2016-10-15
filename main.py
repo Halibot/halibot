@@ -37,7 +37,10 @@ def h_init(args):
 			return
 
 	config = {
-		"package-path": ["packages"],
+		"package-path": [
+			"packages",
+			os.path.join(os.path.abspath(os.path.dirname(__file__)), "packages")
+		],
 		"repos": ["git://github.com/halibot-extra/{}"],
 		"agent-instances": {},
 		"module-instances": {}
