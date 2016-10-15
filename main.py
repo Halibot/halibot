@@ -5,6 +5,7 @@ import json
 import logging
 import sys
 import os
+import shutil
 import zipfile
 import tarfile
 import urllib.request
@@ -120,6 +121,26 @@ def h_fetch(args):
 		if not success:
 			print("\033[91mFailed to fetch '{}'!\033[0m".format(name))
 
+def h_unfetch(args):
+	# In order to access the config easily
+	bot = halibot.Halibot()
+	bot._load_config()
+
+	# Remove each requested package
+	for name in args.packages:
+		# Install to the first package path by default
+		success = False
+		for pkgpath in bot.config["package-path"]:
+			path = os.path.join(pkgpath, name)
+			if os.path.exists(path):
+				shutil.rmtree(path)
+				print("Removed '{}' installed to '{}'.".format(name, path))
+				success = True
+
+		if not success:
+			print("Could not find package '{}'".format(name))
+
+
 def h_list_packages(args):
 	bot = halibot.Halibot()
 	bot._load_config()
@@ -224,6 +245,7 @@ if __name__ == "__main__":
 		"init": h_init,
 		"run": h_run,
 		"fetch": h_fetch,
+		"unfetch": h_unfetch,
 		"add": h_add,
 		"rm": h_rm,
 		"packages": h_list_packages,
@@ -242,6 +264,9 @@ if __name__ == "__main__":
 
 	fetch = sub.add_parser("fetch", help="fetch remote packages")
 	fetch.add_argument("packages", help="name of package to fetch", nargs="+", metavar="package")
+
+	unfetch = sub.add_parser("unfetch", help="as if you never fetched them at all")
+	unfetch.add_argument("packages", help="name of package to unfetch", nargs="+", metavar="package")
 
 	add = sub.add_parser("add", help="add agents or modules to the local halibot instance")
 	add.add_argument("things", help="path to class to add", nargs="+", metavar="class")
