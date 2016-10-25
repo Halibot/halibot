@@ -11,6 +11,28 @@ import pydle, threading
 #  Receives messages from the Halibot base, relays them to the IRC server
 class IrcAgent(HalAgent):
 
+	options = {
+		'nickname': {
+			'type'    : 'string',
+			'prompt'  : 'Nickname',
+			'default' : 'halibot',
+		},
+		'hostname': {
+			'type'    : 'string',
+			'prompt'  : 'Server hostname',
+			'default' : 'irc.freenode.net',
+		},
+		'port': {
+			'type'    : 'string',
+			'prompt'  : 'Server port',
+			'default' : '6667',
+		},
+		'channel': {
+			'type'    : 'string',
+			'prompt'  : 'Channel to join',
+		},
+	}
+
 	# Handle to the Pydle IRC Client object as defined below
 	client = None
 
@@ -24,7 +46,7 @@ class IrcAgent(HalAgent):
 		# Give the client object a handle to talk back to this agent class
 		self.client.agent = self 
 		
-		self.client.connect(hostname="irc.freenode.net", port="6667",) # TODO: Remove hardcoded values here
+		self.client.connect(hostname=self.config['hostname'], port=self.config['port'])
 		self._start_client()
 
 	# Implement the receive() function as defined in the HalModule class
