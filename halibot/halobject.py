@@ -80,3 +80,5 @@ class HalObject():
 
 		return name, conf
 
+	def invoke(self, inst, method, *args, **kwargs):
+		return getattr(self._hal.objects[inst], method)(*args, **kwargs)
