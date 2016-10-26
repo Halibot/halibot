@@ -34,7 +34,7 @@ class TestAuth(util.HalibotTestCase):
 	def test_hasperm_func(self):
 		self.bot.auth.enabled = True
 		stub = StubModuleFunc(self.bot)
-		self.bot.add_module_instance('stub_mod', stub)
+		self.bot.add_instance('stub_mod', stub)
 
 		ri = "test/foobar"
 		user = "tester"
@@ -53,7 +53,7 @@ class TestAuth(util.HalibotTestCase):
 	def test_hasperm_dec(self):
 		self.bot.auth.enabled = True
 		stub = StubModuleDec(self.bot)
-		self.bot.add_module_instance('stub_mod', stub)
+		self.bot.add_instance('stub_mod', stub)
 
 		ri = "test/foobar"
 		user = "tester"

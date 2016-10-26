@@ -3,7 +3,7 @@ from .halobject import HalObject
 class HalAgent(HalObject):
 
 	def dispatch(self, msg):
-		out = self.config.get('out', self._hal.modules.keys())
+		out = self.config.get('out', self._hal.objects.modules.keys())
 		self.send_to(msg, out)
 
 	def connect(self, to):
