@@ -36,7 +36,7 @@ class HalObject():
 
 		for ri in dests:
 			name = ri.split('/')[0]
-			to = self._hal.get_object(name)
+			to = self._hal.objects.get(name)
 			if to:
 				nmsg = copy.copy(msg)
 				nmsg.target = ri

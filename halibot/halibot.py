@@ -137,9 +137,6 @@ class Halibot():
 
 			self.add_module_instance(k, obj(self, conf))
 
-	def get_object(self, name):
-		return self.objects.get(name, None)
-
 	def get_package(self, name):
 		for prefix in self.config['package-path']:
 			path = os.path.join(prefix, name, '__init__.py')
@@ -153,7 +150,7 @@ class Halibot():
 
 	# Restart a module instance by name
 	def restart(self, name):
-		o = self.get_object(name)
+		o = self.objects.get(name)
 		if o:
 			o.shutdown()
 			o.init()
