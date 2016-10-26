@@ -25,7 +25,7 @@ def h_init(args):
 
 	if not os.path.exists(args.path):
 		os.mkdir(args.path)
-	else: # Dir does exist, ensure clear
+	else:  # Dir does exist, ensure clear
 		if os.listdir(args.path):
 			r = input("Directory not empty, are you sure you want to init here? [y/N]: ")
 			if not r.lower() in ("y", "yes", "yolo"):
@@ -54,7 +54,7 @@ def h_init(args):
 		print("Created '{}'".format(pkgpath))
 
 	print("Halibot instance has been initialized!")
-	print("\nUse '{} run' to run the instance, or edit 'config.json' to add module/agent instances")
+	print("\nUse '{} run' to run the instance, or edit 'config.json' to add module/agent instances".format(sys.argv[0]))
 
 def h_run(args):
 	# Maybe do the config loading here?
