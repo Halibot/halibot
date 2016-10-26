@@ -50,8 +50,8 @@ class Halibot():
 
 		if self.use_config:
 			self._load_config()
-			self._instantiate_agents()
-			self._instantiate_modules()
+			self._instantiate_objects("agent")
+			self._instantiate_objects("module")
 			if self.use_auth:
 				self.auth.load_perms(self.config.get("auth-path","permissions.json"))
 
@@ -63,17 +63,11 @@ class Halibot():
 
 		self.log.info("Halibot shutdown. Threads left: " + str(threading.active_count()))
 
-	def add_agent_instance(self, name, inst):
+	def add_instance(self, name, inst):
 		self.objects[name] = inst
 		inst.name = name
 		inst.init()
-		self.log.info("Instantiated agent '" + name + "'")
-
-	def add_module_instance(self, name, inst):
-		self.objects[name] = inst
-		inst.name = name
-		inst.init()
-		self.log.info("Instantiated module '" + name + "'")
+		self.log.info("Instantiated object '" + name + "'")
 
 	def _load_config(self):
 		with open("config.json","r") as f:
@@ -97,8 +91,8 @@ class Halibot():
 
 		return obj
 
-	def _instantiate_agents(self):
-		inst = self.config["agent-instances"]
+	def _instantiate_objects(self, key):
+		inst = self.config[key + "-instances"]
 
 		for k in inst.keys():
 			# TODO include directive
@@ -108,34 +102,17 @@ class Halibot():
 
 			if len(split) == 1:
 				# deprecated; remove with 1.0
-				obj = self.agent_loader.get(conf["of"])
+				if key == "modules":
+					obj = self.module_loader.get(conf["of"])
+				else:
+					obj = self.agent_loader.get(conf["of"])
 			elif len(split) == 2:
 				obj = self._get_class_from_package(split[0], split[1])
 			else:
 				self.log.error("Invalid class identifier {}, must contain only 1 ':'".format(conf["of"]))
 				continue
 
-			self.add_agent_instance(k, obj(self, conf))
-
-	def _instantiate_modules(self):
-		inst = self.config["module-instances"]
-
-		for k in inst.keys():
-			# TODO include directive
-
-			conf = inst[k]
-			split = conf["of"].split(":")
-
-			if len(split) == 1:
-				# deprecated; remove with 1.0
-				obj = self.module_loader.get(conf["of"])
-			elif len(split) == 2:
-				obj = self._get_class_from_package(split[0], split[1])
-			else:
-				self.log.error("Invalid class identifier {}, must contain only 1 ':'".format(conf["of"]))
-				continue
-
-			self.add_module_instance(k, obj(self, conf))
+			self.add_instance(k, obj(self, conf))
 
 	def get_package(self, name):
 		for prefix in self.config['package-path']:

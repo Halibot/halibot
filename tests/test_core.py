@@ -25,14 +25,14 @@ class TestCore(util.HalibotTestCase):
 
 	def test_add_module(self):
 		stub = StubModule(self.bot)
-		self.bot.add_module_instance('stub_mod', stub)
+		self.bot.add_instance('stub_mod', stub)
 
 		self.assertTrue(stub.inited)
 		self.assertEqual(stub, self.bot.objects.get('stub_mod'))
 
 	def test_add_agent(self):
 		stub = StubAgent(self.bot)
-		self.bot.add_agent_instance('stub_agent', stub)
+		self.bot.add_instance('stub_agent', stub)
 
 		self.assertTrue(stub.inited)
 		self.assertEqual(stub, self.bot.objects.get('stub_agent'))
@@ -40,8 +40,8 @@ class TestCore(util.HalibotTestCase):
 	def test_send_recv(self):
 		agent = StubAgent(self.bot)
 		mod = StubModule(self.bot)
-		self.bot.add_agent_instance('stub_agent', agent)
-		self.bot.add_module_instance('stub_mod', mod)
+		self.bot.add_instance('stub_agent', agent)
+		self.bot.add_instance('stub_mod', mod)
 
 		foo = halibot.Message(body='foo')
 		bar = halibot.Message(body='bar')
