@@ -26,11 +26,45 @@ class IrcAgent(HalAgent):
 		('port', {
 			'type'    : 'string',
 			'prompt'  : 'Server port',
-			'default' : '6667',
+			'default' : '6697',
 		}),
 		('channel', {
 			'type'    : 'string',
 			'prompt'  : 'Channel to join',
+		}),
+		('tls', {
+			'type'    : 'bool',
+			'prompt'  : 'Enable TLS',
+			'default' : 'true',
+		}),
+		('tls-verify', {
+			'type'    : 'bool',
+			'prompt'  : 'Verify server TLS certificate',
+			'default' : 'false',
+		}),
+		('tls-certificate-file', {
+			'type'    : 'string',
+			'prompt'  : 'TLS certificate file',
+		}),
+		('tls-certificate-keyfile', {
+			'type'    : 'string',
+			'prompt'  : 'TLS certificate keyfile',
+		}),
+		('tls-certificate-password', {
+			'type'    : 'string',
+			'prompt'  : 'TLS certificate password',
+		}),
+		('sasl-username', {
+			'type'    : 'string',
+			'prompt'  : 'SASL username',
+		}),
+		('sasl-password', {
+			'type'    : 'string',
+			'prompt'  : 'SASL password',
+		}),
+		('sasl-identity', {
+			'type'    : 'string',
+			'prompt'  : 'SASL identity',
 		}),
 	])
 
@@ -42,12 +76,26 @@ class IrcAgent(HalAgent):
 	#  NOT in __init__()!
 	def init(self):
 		# Create the IRC client object as defined/extended below
-		self.client = IrcClient(nickname=self.config['nickname'])
-		
+		self.client = IrcClient(
+				nickname                 = self.config['nickname'],
+				tls_certificate_file     = self.config.get('tls-certificate-file'),
+				tls_certificate_keyfile  = self.config.get('tls-certificate-keyfile'),
+				tls_certificate_password = self.config.get('tls-certificate-file'),
+				sasl_username            = self.config.get('sasl-username'),
+				sasl_password            = self.config.get('sasl-password'),
+				sasl_identity            = self.config.get('sasl-identity'),
+		)
+
 		# Give the client object a handle to talk back to this agent class
-		self.client.agent = self 
-		
-		self.client.connect(hostname=self.config['hostname'], port=self.config['port'])
+		self.client.agent = self
+
+		self.client.connect(
+				hostname   = self.config['hostname'],
+				port       = self.config['port'],
+				tls        = self.config.get('tls', True),
+				tls_verify = self.config.get('tls-verify', False),
+		)
+
 		self._start_client()
 
 	# Implement the receive() function as defined in the HalModule class
@@ -70,7 +118,7 @@ class IrcAgent(HalAgent):
 	def _start_client(self):
 		self.thread = threading.Thread(target=self.client.handle_forever)
 		self.thread.start()
-	
+
 	# NOTE: The Module() base class implements a send() function, do NOT override this.
 	#  The function is used to send to the Halibot base for module processing.
 	#  Simply implementing the receive() function is enough to get messages from the modules,
