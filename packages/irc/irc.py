@@ -140,8 +140,15 @@ class IrcClient(pydle.Client):
 	#   config files when the module is loaded
 	def on_connect(self):
 		super().on_connect()
-		# TODO: Allow joining of multiple channels
-		self.join(self.agent.config['channel'])
+
+		channel = self.agent.config['channel']
+		if isinstance(channel, str):
+			# Is a string, join that channel
+			self.join(channel)
+		else:
+			# Persume a list of channels, join those
+			for c in channel:
+				self.join(c)
 
 	# Pydle calls this when a message is received from the server
 	#  The purpose of this agent is to communicate with IRC,
