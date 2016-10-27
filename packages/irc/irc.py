@@ -134,6 +134,9 @@ class IrcClient(pydle.Client):
 	# Handle to the IRC Agent above
 	agent = None
 
+	# Cache of whois lookups
+	whois_cache = {}
+
 	# Pydle calls this when the client connects to the server.
 	#  Sets the channel(s) to join from the agent's config.
 	#  NOTE: the config field is automatically populated from the relevant
@@ -150,12 +153,35 @@ class IrcClient(pydle.Client):
 			for c in channel:
 				self.join(c)
 
+	def on_quit(self, channel, user):
+		# Invalidate the WHOIS cache entry
+		if user in self.whois_cache: self.whois_cache.pop(user)
+
+	def on_nick_change(self, old, new):
+		# Invalidate the WHOIS cache entries
+		if old in self.whois_cache: self.whois_cache.pop(old)
+		if new in self.whois_cache: self.whois_cache.pop(new)
+
+	@pydle.coroutine
+	def identity(self, nick):
+		# Do the WHOIS if the result is not cached
+		if not nick in self.whois_cache:
+			self.whois_cache[nick] = yield self.whois(nick)
+
+		# If they are identified, return the account name
+		if self.whois_cache[nick]['identified']:
+			return self.whois_cache[nick]['account']
+
+		# Not identified
+		return None
+
 	# Pydle calls this when a message is received from the server
 	#  The purpose of this agent is to communicate with IRC,
 	#  so this repackages the message from Pydle into a Halibot-friendly message
+	@pydle.coroutine
 	def on_channel_message(self, target, by, text):
 		org = self.agent.name + '/' + target
-		msg = Message(body=text, author=by, origin=org)
+		msg = Message(body=text, author=by, identity=self.identity(by), origin=org)
 
 		# Send the Halibot-friendly message to the Halibot base for module processing
 		self.agent.dispatch(msg)
