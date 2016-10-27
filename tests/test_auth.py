@@ -39,7 +39,7 @@ class TestAuth(util.HalibotTestCase):
 		ri = "test/foobar"
 		user = "tester"
 		perm = "Foo"
-		msg = halibot.Message(body="", origin=ri, author=user)
+		msg = halibot.Message(body="", origin=ri, identity=user)
 
 		stub.receive(msg)
 	
@@ -58,7 +58,7 @@ class TestAuth(util.HalibotTestCase):
 		ri = "test/foobar"
 		user = "tester"
 		perm = "Foo"
-		msg = halibot.Message(body="", origin=ri, author=user)
+		msg = halibot.Message(body="", origin=ri, identity=user)
 
 		stub.receive(msg)
 	
