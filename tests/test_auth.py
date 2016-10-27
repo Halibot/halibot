@@ -42,13 +42,16 @@ class TestAuth(util.HalibotTestCase):
 		msg = halibot.Message(body="", origin=ri, identity=user)
 
 		stub.receive(msg)
-	
 		self.assertFalse(stub.called)
 
 		self.bot.auth.grantPermission(ri, user, perm)
 		stub.receive(msg)
-
 		self.assertTrue(stub.called)
+
+		stub.called = False
+		self.bot.auth.revokePermission(ri, user, perm)
+		stub.receive(msg)
+		self.assertFalse(stub.called)
 
 	def test_hasperm_dec(self):
 		self.bot.auth.enabled = True
@@ -61,13 +64,16 @@ class TestAuth(util.HalibotTestCase):
 		msg = halibot.Message(body="", origin=ri, identity=user)
 
 		stub.receive(msg)
-	
 		self.assertFalse(stub.called)
 
 		self.bot.auth.grantPermission(ri, user, perm)
 		stub.receive(msg)
-
 		self.assertTrue(stub.called)
+
+		stub.called = False
+		self.bot.auth.revokePermission(ri, user, perm)
+		stub.receive(msg)
+		self.assertFalse(stub.called)
 
 
 
