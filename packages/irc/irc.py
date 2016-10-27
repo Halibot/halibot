@@ -1,8 +1,9 @@
-# 
+#
 # Reference Halibot IRC Agent
 #  Connects to an IRC server and relays messages to and from the base
 #
 from halibot import HalAgent, Context, Message
+from collections import OrderedDict
 import pydle, threading
 
 # Haliot Reference IRC Agent
@@ -11,27 +12,27 @@ import pydle, threading
 #  Receives messages from the Halibot base, relays them to the IRC server
 class IrcAgent(HalAgent):
 
-	options = {
-		'nickname': {
+	options = OrderedDict([
+		('nickname', {
 			'type'    : 'string',
 			'prompt'  : 'Nickname',
 			'default' : 'halibot',
-		},
-		'hostname': {
+		}),
+		('hostname', {
 			'type'    : 'string',
 			'prompt'  : 'Server hostname',
 			'default' : 'irc.freenode.net',
-		},
-		'port': {
+		}),
+		('port', {
 			'type'    : 'string',
 			'prompt'  : 'Server port',
 			'default' : '6667',
-		},
-		'channel': {
+		}),
+		('channel', {
 			'type'    : 'string',
 			'prompt'  : 'Channel to join',
-		},
-	}
+		}),
+	])
 
 	# Handle to the Pydle IRC Client object as defined below
 	client = None
