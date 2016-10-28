@@ -199,6 +199,11 @@ def h_add(args):
 				continue
 
 		(name, conf) = cls.configure({ 'of': clspath })
+
+		if name in bot.config["agent-instances"] or name in bot.config["module-instances"]:
+			print("Instance name '{}' is already in configuration, please choose a different instance name".format(name))
+			return
+
 		bot.config[destkey][name] = conf
 
 	with open("config.json","w") as f:
