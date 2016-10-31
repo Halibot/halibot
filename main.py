@@ -62,8 +62,48 @@ def h_run(args):
 		print("Failed to start: No halibot configuration found in the current directory!")
 		return
 
-	logging.basicConfig(level=logging.DEBUG)
 	bot = halibot.Halibot()
+	bot._load_config()
+
+	logfile = None
+	loglevel = logging.DEBUG
+	loglevel_str = "DEBUG"
+	loglevels = { 
+		"CRITICAL": logging.CRITICAL, 
+		"ERROR": logging.ERROR, 
+		"WARNING": logging.WARNING, 
+		"INFO": logging.INFO,
+		"DEBUG": logging.DEBUG, 
+		"NOTSET": logging.NOTSET
+	}
+	
+	# Set log level if argument is provided
+	if args.log_level:
+		loglevel_str = args.log_level
+	elif "log-level" in bot.config:
+		loglevel_str = bot.config["log-level"]
+
+	# Error check log level string
+	if loglevel_str not in loglevels:
+		print("Log level '{}' invalid.".format(loglevel_str))
+		return
+	else:
+		loglevel = loglevels[loglevel_str]
+
+	# Set log file if argument is provided
+	if args.log_file:
+		logfile = args.log_file
+	elif "log-file" in bot.config:
+		logfile = bot.config["log-file"]
+
+	logging.basicConfig(filename=logfile, level=loglevel)
+
+	# Print used configuration
+	if logfile:
+		print("Logs at '{}' with log level '{}'".format(logfile, loglevel_str))
+	else:
+		print("Log level '{}'".format(loglevel_str))
+
 	bot.start(block=True)
 
 	if args.interactive:
@@ -248,6 +288,8 @@ if __name__ == "__main__":
 
 	run = sub.add_parser("run", help="run the local halibot instance")
 	run.add_argument("-i", "--interactive", help="enter a python shell after starting halibot", action="store_true", required=False)
+	run.add_argument("-f", "--log-file", help="file to output logs to, none by default")
+	run.add_argument("-l", "--log-level", help="level of logs, DEBUG by default")
 
 	fetch = sub.add_parser("fetch", help="fetch remote packages")
 	fetch.add_argument("packages", help="name of package to fetch", nargs="+", metavar="package")
