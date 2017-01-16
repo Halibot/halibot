@@ -158,6 +158,16 @@ def h_unfetch(args):
 			print("Could not find package '{}'".format(name))
 
 
+def h_search(args):
+	# In order to access the config easily
+	bot = halibot.Halibot()
+	bot._load_config()
+
+	# Iterate through every repository
+	for url in bot.config["repos"]:
+		repo = halibot.Repo(url)
+		repo.search(args.term[0])
+
 def h_list_packages(args):
 	bot = halibot.Halibot()
 	bot._load_config()
@@ -243,13 +253,14 @@ def h_rm(args):
 
 if __name__ == "__main__":
 	subcmds = {
-		"init": h_init,
-		"run": h_run,
-		"fetch": h_fetch,
-		"unfetch": h_unfetch,
-		"add": h_add,
-		"rm": h_rm,
+		"init":     h_init,
+		"run":      h_run,
+		"fetch":    h_fetch,
+		"unfetch":  h_unfetch,
+		"add":      h_add,
+		"rm":       h_rm,
 		"packages": h_list_packages,
+		"search":   h_search
 	}
 
 	# Setup argument parsing
@@ -281,6 +292,9 @@ if __name__ == "__main__":
 	rm.add_argument("names", help="names of agents or modules to remove", nargs="+", metavar="name")
 
 	list_packages = sub.add_parser("packages", help="list all installed packages")
+
+	search = sub.add_parser("search", help="search for a package")
+	search.add_argument("term", help="term to search for", nargs=1, metavar="term")
 
 	args = parser.parse_args()
 

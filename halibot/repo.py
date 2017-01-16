@@ -81,3 +81,16 @@ class Repo():
 				print(e)
 
 		return False
+
+	def search(self, what):
+		results = []
+
+		for name in self.packages:
+			desc = self.packages[name]['description']
+			if name.find(what) != -1 or desc.find(what) != -1:
+				results.append( (name, desc) )
+
+		results.sort()
+		for (name, desc) in results:
+			print(name, ' - ', desc)
+
