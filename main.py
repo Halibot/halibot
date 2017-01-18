@@ -6,18 +6,9 @@ import logging
 import sys
 import os
 import shutil
-import zipfile
-import tarfile
-import urllib.request
 import io
 import argparse
 import code
-
-noGit = False
-try:
-	from git import Repo
-except ImportError:
-	noGit = True
 
 def h_init(args):
 	confpath = os.path.join(args.path, "config.json")
@@ -126,42 +117,25 @@ def h_fetch(args):
 		print("I have nothing to fetch from!")
 		return
 
+	# Instantiate the repo list
+	repos = []
+	for url in bot.config["repos"]:
+		repos.append(halibot.Repo(url))
+
 	# Try to fetch each requested package
 	for name in args.packages:
 		# Install to the first package path by default
 		dst = os.path.join(bot.config["package-path"][0], name)
 
 		success = False
-		for r in bot.config["repos"]:
-			src = r.format(name)
-			try:
-				if src.startswith("git://"):
-					if noGit:
-						raise Exception("The git module is not installed, I cannot clone git repos.")
-					print("Trying to git clone '{}'...".format(src))
-					Repo.clone_from(src, dst)
-				elif src.endswith(".zip"):
-					print("Trying to extract zip from '{}'...".format(src))
-					bio = io.BytesIO(urllib.request.urlopen(src).readall())
-					z = zipfile.ZipFile(bio)
-					os.mkdir(dst)
-					z.extractall(dst)
-				elif src.endswith( (".tar", ".tar.gz", ".tar.bz", ".tar.xz" ) ):
-					print("Trying to extract tarball from '{}'...".format(src))
-					bio = io.BytesIO(urllib.request.urlopen(src).readall())
-					tar = tarfile.open(mode="r:*", fileobj=bio)
-					os.mkdir(dst)
-					tar.extractall(dst)
-				else:
-					raise Exception("I do not know how to handle the path '{}'".format(src))
-
-				print("\033[92mSuccessfully fetched '{}' into '{}'.\033[0m".format(name, dst))
+		for r in repos:
+			if r.fetch(name, dst):
 				success = True
 				break
-			except Exception as e:
-				print(e)
 
-		if not success:
+		if success:
+			print("\033[92mSuccessfully fetched '{}' into '{}'.\033[0m".format(name, dst))
+		else:
 			print("\033[91mFailed to fetch '{}'!\033[0m".format(name))
 
 def h_unfetch(args):
@@ -183,6 +157,16 @@ def h_unfetch(args):
 		if not success:
 			print("Could not find package '{}'".format(name))
 
+
+def h_search(args):
+	# In order to access the config easily
+	bot = halibot.Halibot()
+	bot._load_config()
+
+	# Iterate through every repository
+	for url in bot.config["repos"]:
+		repo = halibot.Repo(url)
+		repo.search(args.term[0])
 
 def h_list_packages(args):
 	bot = halibot.Halibot()
@@ -269,13 +253,14 @@ def h_rm(args):
 
 if __name__ == "__main__":
 	subcmds = {
-		"init": h_init,
-		"run": h_run,
-		"fetch": h_fetch,
-		"unfetch": h_unfetch,
-		"add": h_add,
-		"rm": h_rm,
+		"init":     h_init,
+		"run":      h_run,
+		"fetch":    h_fetch,
+		"unfetch":  h_unfetch,
+		"add":      h_add,
+		"rm":       h_rm,
 		"packages": h_list_packages,
+		"search":   h_search
 	}
 
 	# Setup argument parsing
@@ -307,6 +292,9 @@ if __name__ == "__main__":
 	rm.add_argument("names", help="names of agents or modules to remove", nargs="+", metavar="name")
 
 	list_packages = sub.add_parser("packages", help="list all installed packages")
+
+	search = sub.add_parser("search", help="search for a package")
+	search.add_argument("term", help="term to search for", nargs=1, metavar="term")
 
 	args = parser.parse_args()
 
