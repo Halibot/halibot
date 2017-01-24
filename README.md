@@ -39,6 +39,33 @@ halibot run
 halibot run -i
 ```
 
+Now the fun stuff.
+
+You can fetch packages from a remote repository via the `fetch` command. To search for additional packages to install, the `search` command is available.
+
+```
+# Fetch the 'dice' and 'cli' modules
+halibot fetch dice cli
+```
+
+These packages now exist in your local package directory (see `packages/`). You can add instances of these packages to your local configuration via the `add` command.
+
+```
+halibot add cli
+Enter instance name: my_cli
+halibot add dice
+Enter instance name: my_dice
+```
+
+Then you can run halibot and roll dice!
+
+```
+halibot run
+>> !roll 1d20
+18/20 = 18
+>>
+```
+
 ## Configuration
 
 Halibot needs a valid configuration to run named `config.json`.
