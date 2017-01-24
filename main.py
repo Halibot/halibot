@@ -6,18 +6,11 @@ import logging
 import sys
 import os
 import shutil
-import zipfile
 import tarfile
 import urllib.request
 import io
 import argparse
 import code
-
-noGit = False
-try:
-	from git import Repo
-except ImportError:
-	noGit = True
 
 def h_init(args):
 	confpath = os.path.join(args.path, "config.json")
@@ -133,27 +126,13 @@ def h_fetch(args):
 
 		success = False
 		for r in bot.config["repos"]:
-			src = r.format(name)
+			src = r + "/fetch/" + name
 			try:
-				if src.startswith("git://"):
-					if noGit:
-						raise Exception("The git module is not installed, I cannot clone git repos.")
-					print("Trying to git clone '{}'...".format(src))
-					Repo.clone_from(src, dst)
-				elif src.endswith(".zip"):
-					print("Trying to extract zip from '{}'...".format(src))
-					bio = io.BytesIO(urllib.request.urlopen(src).readall())
-					z = zipfile.ZipFile(bio)
-					os.mkdir(dst)
-					z.extractall(dst)
-				elif src.endswith( (".tar", ".tar.gz", ".tar.bz", ".tar.xz" ) ):
-					print("Trying to extract tarball from '{}'...".format(src))
-					bio = io.BytesIO(urllib.request.urlopen(src).readall())
-					tar = tarfile.open(mode="r:*", fileobj=bio)
-					os.mkdir(dst)
-					tar.extractall(dst)
-				else:
-					raise Exception("I do not know how to handle the path '{}'".format(src))
+				print("Trying to fetch package from '{}'...".format(r))
+				bio = io.BytesIO(urllib.request.urlopen(src).read())
+				tar = tarfile.open(mode="r:*", fileobj=bio)
+				os.mkdir(dst)
+				tar.extractall(dst)
 
 				print("\033[92mSuccessfully fetched '{}' into '{}'.\033[0m".format(name, dst))
 				success = True
