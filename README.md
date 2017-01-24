@@ -65,7 +65,11 @@ Halibot uses valid python JSON, and will throw errors if the `config.json` does 
     "hello0": {
       "of": "hello:Hello"
     }
-  }
+  },
+
+  "repos": [
+    "http://halibot.fish:4842"
+  ]
 }
 ```
 
