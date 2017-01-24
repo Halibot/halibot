@@ -143,6 +143,35 @@ def h_fetch(args):
 		if not success:
 			print("\033[91mFailed to fetch '{}'!\033[0m".format(name))
 
+def h_search(args):
+	# In order to access the config easily
+	bot = halibot.Halibot()
+	bot._load_config()
+
+	# Error checking
+	if not "repos" in bot.config:
+		print("There are no repos specified in the config.json.")
+		print("I have nowhere to search!")
+		return
+
+	# Query all listed repositories
+	results = {}
+	for r in bot.config["repos"]:
+		url = r + "/search/"
+		if args.term != None:
+			url += args.term
+
+		data = urllib.request.urlopen(url).read().decode('utf-8')
+		subres = json.loads(data)
+		results = dict(list(subres.items()) + list(results.items()))
+
+	# Output results
+	sorted_keys = list(results.keys())
+	sorted_keys.sort()
+	for name in sorted_keys:
+		print(name, "-", results[name]['description'])
+
+
 def h_unfetch(args):
 	# In order to access the config easily
 	bot = halibot.Halibot()
@@ -255,6 +284,7 @@ if __name__ == "__main__":
 		"add": h_add,
 		"rm": h_rm,
 		"packages": h_list_packages,
+		"search": h_search,
 	}
 
 	# Setup argument parsing
@@ -286,6 +316,9 @@ if __name__ == "__main__":
 	rm.add_argument("names", help="names of agents or modules to remove", nargs="+", metavar="name")
 
 	list_packages = sub.add_parser("packages", help="list all installed packages")
+
+	search = sub.add_parser("search", help="search for packages")
+	search.add_argument("term", help="what to search for", nargs="?", metavar="term")
 
 	args = parser.parse_args()
 
