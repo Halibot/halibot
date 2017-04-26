@@ -21,7 +21,8 @@ class HalObject():
 		self.shutdown()
 
 	def _queue_msg(self, msg):
-		self.eventloop.call_soon_threadsafe(self.receive, msg)
+		fut = asyncio.run_coroutine_threadsafe(self._receive(msg), self.eventloop)
+		return fut
 
 	def init(self):
 		pass
@@ -40,9 +41,13 @@ class HalObject():
 			if to:
 				nmsg = copy.copy(msg)
 				nmsg.target = ri
-				to._queue_msg(nmsg)
+				return to._queue_msg(nmsg)
 			else:
 				self.log.warning('Unknown module/agent: ' + str(name))
+
+	async def _receive(self, msg):
+		self.receive(msg)
+
 
 	def receive(self, msg):
 		pass
