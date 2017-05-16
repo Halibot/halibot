@@ -34,7 +34,7 @@ def h_init(args):
 			"packages",
 			os.path.join(os.path.abspath(os.path.dirname(__file__)), "packages")
 		],
-		"repos": ["http://halibot.fish:4842"],
+		"repos": ["https://halibot.fish:4842"],
 		"agent-instances": {},
 		"module-instances": {}
 	}
