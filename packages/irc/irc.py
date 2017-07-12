@@ -2,7 +2,7 @@
 # Reference Halibot IRC Agent
 #  Connects to an IRC server and relays messages to and from the base
 #
-from halibot import HalAgent, Context, Message
+from halibot import HalAgent, HalConfigurer, Context, Message
 from collections import OrderedDict
 import pydle, threading
 
@@ -12,61 +12,20 @@ import pydle, threading
 #  Receives messages from the Halibot base, relays them to the IRC server
 class IrcAgent(HalAgent):
 
-	options = OrderedDict([
-		('nickname', {
-			'type'    : 'string',
-			'prompt'  : 'Nickname',
-			'default' : 'halibot',
-		}),
-		('hostname', {
-			'type'    : 'string',
-			'prompt'  : 'Server hostname',
-			'default' : 'irc.freenode.net',
-		}),
-		('port', {
-			'type'    : 'string',
-			'prompt'  : 'Server port',
-			'default' : '6697',
-		}),
-		('channel', {
-			'type'    : 'string',
-			'prompt'  : 'Channel to join',
-		}),
-		('tls', {
-			'type'    : 'bool',
-			'prompt'  : 'Enable TLS',
-			'default' : 'true',
-		}),
-		('tls-verify', {
-			'type'    : 'bool',
-			'prompt'  : 'Verify server TLS certificate',
-			'default' : 'false',
-		}),
-		('tls-certificate-file', {
-			'type'    : 'string',
-			'prompt'  : 'TLS certificate file',
-		}),
-		('tls-certificate-keyfile', {
-			'type'    : 'string',
-			'prompt'  : 'TLS certificate keyfile',
-		}),
-		('tls-certificate-password', {
-			'type'    : 'string',
-			'prompt'  : 'TLS certificate password',
-		}),
-		('sasl-username', {
-			'type'    : 'string',
-			'prompt'  : 'SASL username',
-		}),
-		('sasl-password', {
-			'type'    : 'string',
-			'prompt'  : 'SASL password',
-		}),
-		('sasl-identity', {
-			'type'    : 'string',
-			'prompt'  : 'SASL identity',
-		}),
-	])
+	class Configurer(HalConfigurer):
+		def configure(self):
+			self.optionString('nickname', prompt='Nickname', default='halibot')
+			self.optionString('hostname', prompt='Server hostname', default='irc.freenode.net')
+			self.optionInt('port', prompt='Server port', default=6697)
+			self.optionString('channel', prompt='Channel to join')
+			self.optionBoolean('tls', prompt='Enable TLS', default=True)
+			self.optionBoolean('tls-verify', prompt='Verify server TLS certificate', default=False)
+			self.optionString('tls-certificate-file', prompt='TLS certificate file')
+			self.optionString('tls-certificate-keyfile', prompt='TLS certificate keyfile')
+			self.optionString('tls-certificate-file', prompt='TLS certificate password')
+			self.optionString('sasl-username', prompt='SASL username')
+			self.optionString('sasl-password', prompt='SASL password')
+			self.optionString('sasl-identity', prompt='SASL identity')
 
 	# Handle to the Pydle IRC Client object as defined below
 	client = None
