@@ -3,6 +3,7 @@ import asyncio
 import inspect
 import copy
 from threading import Thread
+from .halconfigurer import HalConfigurer
 
 class HalObject():
 
@@ -52,36 +53,19 @@ class HalObject():
 	def receive(self, msg):
 		pass
 
+
+	class Configurer(HalConfigurer):
+		pass
+
 	# Configures an instance of this class based on the 'options' attribute
 	@classmethod
 	def configure(cls, conf):
 		name = input('Enter instance name: ')
 
-		for key in getattr(cls, 'options', {}):
-			opt = cls.options[key]
+		configurer = cls.Configurer()
+		configurer.configure()
 
-			prompt = opt['prompt']
-			if 'default' in opt:
-				prompt += ' [' + str(opt['default']) + ']: '
-			else:
-				prompt += ': '
-
-			val = input(prompt)
-			if val == '':
-				if 'default' in opt:
-					val = opt['default']
-				else:
-					# Don't write this key
-					continue
-
-			if opt['type'] == 'int':
-				conf[key] = int(val)
-			elif opt['type'] == 'float':
-				conf[key] = float(val)
-			elif opt['type'] == 'bool':
-				conf[key] = (val.lower() == 'true')
-			else:
-				conf[key] = val
+		conf = {**conf, **configurer.options}
 
 		return name, conf
 

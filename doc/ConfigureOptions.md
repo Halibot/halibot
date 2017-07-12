@@ -20,7 +20,7 @@ The `HalConfigurer` class provides a method called `option` which prompts the
 user to configure an option. For syntax is as follows:
 
 ```python
-HalConfigurer.option(option_type, key=, prompt=, default=)
+HalConfigurer.option(option_type, key, prompt=, default=)
 ```
 
 * `option_type` is an instance of a subclass of `Halibot.Option` that determines
@@ -46,17 +46,14 @@ These option types are further made easily available via wrapper functions that
 simply wrap to the underlying `HalConfigurer.option`, and are respectively as
 follows:
 
-* `HalConfigurer.optionString(key=, prompt=, default=)`
-* `HalConfigurer.optionInt(key=, prompt=, default=)`
-* `HalConfigurer.optionNumber(key=, prompt=, default=)`
-* `HalConfigurer.optionBool(key=, prompt=, default=)`
+* `HalConfigurer.optionString(key, prompt=, default=)`
+* `HalConfigurer.optionInt(key, prompt=, default=)`
+* `HalConfigurer.optionNumber(key, prompt=, default=)`
+* `HalConfigurer.optionBool(key, prompt=, default=)`
 
-The `HalConfigurer` class also has a `validate` function, which consumes the
+The `HalConfigurer` class also has a `valid` function, which consumes the
 user-defined configure function automatically and returns True or False
-depending on whether or not the currently specified config is valid. The
-validate function takes the optional parameter of `config` which will set the
-config to check, where otherwise it checks the config already associated with
-the configurer.
+depending on whether or not the currently given value is valid.
 
 Example module with Configurer
 ------------------------------
@@ -69,9 +66,9 @@ class Responder(HalModule):
 
 	class Configurer(HalConfigurer):
 		def configure(self):
-			self.optionString(key='accept', prompt='Accept string')
-			self.optionString(key='return', prompt='Return string')
-			self.optionInt(key='delay', prompt='Wait seconds before responding', default=0)
+			self.optionString('accept', prompt='Accept string')
+			self.optionString('return', prompt='Return string')
+			self.optionInt('delay', prompt='Wait seconds before responding', default=0)
 
 	def message(self, msg):
 		if 'accept' in self.config and msg.body == self.config['accept']:
@@ -85,17 +82,13 @@ The Option class
 The `Option` class allows you to write your own prompting or validation
 mechanisms for a specific object type.
 
-There are four methods one should define:
+There are methods one can override are:
 
-* `configure(self, prompt)` which prompts the user for the value for this option
-  type with the given prompt. Sets a `self.value` to the result of the prompt by
-  default, calls `self.validate` to check, and reprompts if the validation failed.
-* `validate(self)` which returns true if the option's value is valid. Always
+* `ask(self)` which prompts the user for a configuration value and returns it
+* `configure(self)` which by default wraps to `ask` and checks that the
+  response given is valid.
+* `valid(self, value)` which returns true if the option's value is valid. Always
   returns true by default.
-* `get(self)` which retrieves the JSON-compliant value set for this option.
-  Returns `self.value` by default.
-* `set(self, value)` which sets a value for this option from the JSON-compliant
-  value. Simply sets `self.value` by default.
 
 Example custom Option class
 ---------------------------
@@ -115,7 +108,7 @@ import os
 from tkinter.filedialog import askopenfilename
 
 class OptFile(halibot.Option.String):
-	def prompt(self):
+	def ask(self):
 		self.value = askopenfilename()
 
 	def validate(self):
