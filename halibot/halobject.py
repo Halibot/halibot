@@ -36,15 +36,17 @@ class HalObject():
 		if msg.origin == None:
 			msg.origin = self.name
 
+		ret = {}
 		for ri in dests:
 			name = ri.split('/')[0]
 			to = self._hal.objects.get(name)
 			if to:
 				nmsg = copy.copy(msg)
 				nmsg.target = ri
-				return to._queue_msg(nmsg)
+				ret[ri] = to._queue_msg(nmsg)
 			else:
 				self.log.warning('Unknown module/agent: ' + str(name))
+		return ret
 
 	async def _receive(self, msg):
 		self.receive(msg)
