@@ -3,6 +3,7 @@ import asyncio
 import inspect
 import copy
 from threading import Thread
+from collections import defaultdict
 from .halconfigurer import HalConfigurer
 
 class HalObject():
@@ -11,6 +12,10 @@ class HalObject():
 		self._hal = hal
 		self.config = conf
 		self.log = logging.getLogger(self.__class__.__name__) # TODO: Put instantiated name in here too
+
+		# Only used in HalModule.reply right now, but accessed on potentially any
+		# HalObject, so it exists on every HalObject to avoid attribute errors
+		self.sync_replies = defaultdict(lambda: []) # UUID -> [Message, ...]
 
 		self.eventloop = asyncio.SelectorEventLoop()
 		self._thread = Thread(target=self.eventloop.run_forever)
@@ -47,6 +52,20 @@ class HalObject():
 			else:
 				self.log.warning('Unknown module/agent: ' + str(name))
 		return ret
+
+	def sync_send_to(self, msg, dests):
+		msg.sync = True
+
+		futs = self.send_to(msg, dests)
+
+		r = {}
+		for name, fut in futs.items():
+			fut.result()
+			to = self._hal.objects.get(name)
+			if to and msg.uuid in to.sync_replies:
+				# Assure that the module was not removed in the interim
+				r[name] = to.sync_replies.pop(msg.uuid)
+		return r
 
 	async def _receive(self, msg):
 		self.receive(msg)
