@@ -1,4 +1,5 @@
 import logging
+import uuid
 from .jsdict import jsdict
 
 # Deprecated, remove at 1.0
@@ -28,6 +29,8 @@ class Message():
 
 	def __init__(self, **kwargs):
 		self.log = logging.getLogger(self.__class__.__name__)
+		self.uuid = uuid.uuid4()
+		self.sync = False
 
 		self.body = kwargs.get('body', None)
 		self.type = kwargs.get('type', 'simple')
