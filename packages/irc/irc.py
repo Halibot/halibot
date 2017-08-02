@@ -18,14 +18,19 @@ class IrcAgent(HalAgent):
 			self.optionString('hostname', prompt='Server hostname', default='irc.freenode.net')
 			self.optionInt('port', prompt='Server port', default=6697)
 			self.optionString('channel', prompt='Channel to join')
+
 			self.optionBoolean('tls', prompt='Enable TLS', default=True)
-			self.optionBoolean('tls-verify', prompt='Verify server TLS certificate', default=False)
-			self.optionString('tls-certificate-file', prompt='TLS certificate file')
-			self.optionString('tls-certificate-keyfile', prompt='TLS certificate keyfile')
-			self.optionString('tls-certificate-file', prompt='TLS certificate password')
+			if self.options['tls']:
+				self.optionBoolean('tls-verify', prompt='Verify server TLS certificate', default=False)
+				if self.options['tls-verify']:
+					self.optionString('tls-certificate-file', prompt='TLS certificate file')
+					self.optionString('tls-certificate-keyfile', prompt='TLS certificate keyfile')
+					self.optionString('tls-certificate-file', prompt='TLS certificate password')
+
 			self.optionString('sasl-username', prompt='SASL username')
-			self.optionString('sasl-password', prompt='SASL password')
-			self.optionString('sasl-identity', prompt='SASL identity')
+			if 'sasl-username' in self.options:
+				self.optionString('sasl-password', prompt='SASL password')
+				self.optionString('sasl-identity', prompt='SASL identity')
 
 	# Handle to the Pydle IRC Client object as defined below
 	client = None
