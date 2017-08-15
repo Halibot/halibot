@@ -1,4 +1,4 @@
-import logging
+import logging, traceback
 import asyncio
 import inspect
 import copy
@@ -68,8 +68,10 @@ class HalObject():
 		return r
 
 	async def _receive(self, msg):
-		self.receive(msg)
-
+		try:
+			self.receive(msg)
+		except Exception as e:
+			traceback.print_exc()
 
 	def receive(self, msg):
 		pass
