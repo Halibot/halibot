@@ -15,18 +15,18 @@ fi
 
 # Define functions
 function uninstall {
-	rm -f $VERBOSE $BINLOC
+	rm -f $VERBOSE $BINLOC &&
 	rm -rf $VERBOSE $SRCLOC
 }
 
 function install {
 	# Sed was being fussy on FreeBSD, used ed, the one true text editor
-	printf "1a\nSRCLOC=$SRCLOC\n.\n,p\n" | ed -s run-scripts/halibot > $BINLOC
-	chmod +x $BINLOC
+	printf "1a\nSRCLOC=$SRCLOC\n.\n,p\n" | ed -s run-scripts/halibot > $BINLOC &&
+	chmod +x $BINLOC &&
 
-	mkdir -p $SRCLOC
-	cp $VERBOSE main.py $SRCLOC
-	cp -r $VERBOSE halibot $SRCLOC/halibot
+	mkdir -p $SRCLOC &&
+	cp $VERBOSE main.py $SRCLOC &&
+	cp -r $VERBOSE halibot $SRCLOC/halibot &&
 	cp -r $VERBOSE packages $SRCLOC/packages
 }
 
