@@ -82,15 +82,14 @@ class HalObject():
 
 	# Configures an instance of this class based on the 'options' attribute
 	@classmethod
-	def configure(cls, conf):
-		name = input('Enter instance name: ')
+	def configure(cls, conf, name=None):
+		if name == None:
+			name = input('Enter instance name: ')
 
-		configurer = cls.Configurer()
+		configurer = cls.Configurer(options=conf)
 		configurer.configure()
 
-		conf = {**conf, **configurer.options}
-
-		return name, conf
+		return name, configurer.options
 
 	def invoke(self, inst, method, *args, **kwargs):
 		return getattr(self._hal.objects[inst], method)(*args, **kwargs)
