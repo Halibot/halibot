@@ -56,11 +56,16 @@ Option.Boolean = BooleanOption
 
 class HalConfigurer():
 
-	def __init__(self):
-		self.options = {}
+	def __init__(self, options={}):
+		self.options = options
 
 	def option(self, option_type, key, **kwargs):
 		opt = option_type(key, **kwargs)
+
+		# Override the default if the option is already set
+		if key in self.options:
+			opt.default = self.options[key]
+
 		val = opt.configure()
 		if val != None:
 			self.options[key] = val

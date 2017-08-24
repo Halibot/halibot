@@ -275,6 +275,96 @@ def h_rm(args):
 	with open("config.json", "w") as f:
 		f.write(json.dumps(bot.config, sort_keys=True, indent=4))
 
+def h_config(args):
+	# In order to access the config easily
+	bot = halibot.Halibot()
+	bot._load_config()
+
+	# Do we have a module or an agent?
+	if args.destkey:
+		destkey = args.destkey
+	else:
+		is_agent  = args.name in bot.config["agent-instances"]
+		is_module = args.name in bot.config["module-instances"]
+		if is_agent == is_module:
+			if is_agent:
+				print("Both an agent and module exist with that name. -a or -m must be specified.")
+			else:
+				print("No such agent or module exists.")
+			return
+		else:
+			destkey = "agent-instances" if is_agent else "module-instances"
+	pkgconf = bot.config[destkey][args.name]
+
+	# Show or edit the config?
+	if args.show:
+		# Only a single key?
+		if args.key != None:
+			print(pkgconf[args.key])
+		else:
+			for k in pkgconf:
+				print(k, "=", pkgconf[k])
+	else:
+		# Reconfigure the package
+		if args.key != None:
+			if args.value == None:
+				print("You must specify a value with -v.")
+				return
+
+			# Detect the type to set
+			if args.type:
+				ty = args.type
+			else:
+				if args.key in pkgconf:
+					typecls = type(pkgconf[args.key])
+					if   typecls == int:   ty = "number"
+					elif typecls == float: ty = "number"
+					elif typecls == str:   ty = "string"
+					elif typecls == bool:  ty = "boolean"
+					else:
+						print("The type of the key '" + args.key + "' is not a settable type.")
+						return
+				else:
+					print("That key does not exist, you must specify the type with -t.")
+
+			# Get the value
+			if ty == "string": value = args.value
+			if ty == "number": value = float(args.value)
+			if ty == "boolean":
+				if   args.value.lower() == 'true': value = True
+				elif args.value.lower() == 'false': value = False
+				else:
+					print("Invalid boolean value, specify 'true' or 'false'.")
+					return
+
+			pkgconf[args.key] = value
+		else:
+			if not "of" in pkgconf:
+				print("Corrupt config, package has no 'of' key.")
+				return
+
+			split = pkgconf["of"].split(":")
+			if len(split) != 2:
+				print("Corrupt config, malformed 'of' value.");
+				return
+
+			pkg = bot.get_package(split[0])
+			if pkg == None:
+				print("The package '" + split[0] + "' does not exist so it cannot be configured.")
+				return
+
+			cls = getattr(pkg, split[1], None)
+			if not cls:
+				print("The package '" + split[0] + "' has no module or agent named '" + split[1] + "'.")
+				return
+
+
+			(name, conf) = cls.configure(pkgconf, name=args.name)
+			bot.config[destkey][name] = conf
+
+		with open("config.json", "w") as f:
+			f.write(json.dumps(bot.config, sort_keys=True, indent=4))
+
 if __name__ == "__main__":
 	subcmds = {
 		"init": h_init,
@@ -285,6 +375,7 @@ if __name__ == "__main__":
 		"rm": h_rm,
 		"packages": h_list_packages,
 		"search": h_search,
+		"config": h_config,
 	}
 
 	# Setup argument parsing
@@ -319,6 +410,15 @@ if __name__ == "__main__":
 
 	search = sub.add_parser("search", help="search for packages")
 	search.add_argument("term", help="what to search for", nargs="?", metavar="term")
+
+	config_cmd = sub.add_parser("config", help="configure or reconfigure a module or agent")
+	config_cmd.add_argument("name", help="name of the module or agent to show or reconfigure")
+	config_cmd.add_argument("-s", "--show", action="store_true", help="show the configuration rather than set it", required=False)
+	config_cmd.add_argument("-k", "--key", help="key to set or key to display with -s", required=False)
+	config_cmd.add_argument("-v", "--value", help="value to set key to", required=False)
+	config_cmd.add_argument("-a", "--agent", dest="destkey", action="store_const", const="agent-instances", help="configure the instance as an agent. Only requried when an agent and a module share a name")
+	config_cmd.add_argument("-m", "--module", dest="destkey", action="store_const", const="module-instances", help="configure instance as a module. Only required when an agent and a module share a name")
+	config_cmd.add_argument("-t", "--type", choices=["string", "number", "boolean"], help="the type used while setting a config value with -k. If not given, it uses the type of the existing value")
 
 	args = parser.parse_args()
 
