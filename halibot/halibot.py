@@ -120,8 +120,16 @@ class Halibot():
 		return importlib.import_module('halibot.packages.' + name)
 
 	# TODO: Reload a class, and restart all modules of that class
-	def reload(self, cls):
-		pass
+	def reload(self, name):
+		parent = 'halibot.packages.' + name
+		for k,o in self.objects.items():
+			if o.__module__.startswith(parent + '.') or o.__module__ == parent:
+				o._shutdown()
+				mod = importlib.reload(importlib.import_module(o.__module__))
+				cls = getattr(mod, o.__class__.__name__)
+				self.add_instance(k, cls(self, o.config))
+
+
 
 	# Restart a module instance by name
 	def restart(self, name):
