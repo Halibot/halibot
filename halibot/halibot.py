@@ -5,7 +5,8 @@
 import json
 import threading
 import os, sys
-from importlib.machinery import SourceFileLoader
+import importlib
+import halibot.packages
 from queue import Queue,Empty
 from .halmodule import HalModule
 from .halagent import HalAgent
@@ -72,6 +73,7 @@ class Halibot():
 	def _load_config(self):
 		with open("config.json","r") as f:
 			self.config = json.loads(f.read())
+			halibot.packages.__path__ = self.config.get("package-path", [])
 
 			# Deprecated; remove with 1.0
 			self.agent_loader = Loader(self.config["package-path"], HalAgent)
@@ -115,11 +117,7 @@ class Halibot():
 			self.add_instance(k, obj(self, conf))
 
 	def get_package(self, name):
-		for prefix in self.config['package-path']:
-			path = os.path.join(prefix, name, '__init__.py')
-			if os.path.exists(path):
-				return SourceFileLoader(path, path).load_module()
-		return None
+		return importlib.import_module('halibot.packages.' + name)
 
 	# TODO: Reload a class, and restart all modules of that class
 	def reload(self, cls):
