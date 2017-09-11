@@ -280,20 +280,13 @@ def h_config(args):
 	bot = halibot.Halibot()
 	bot._load_config()
 
-	# Do we have a module or an agent?
-	if args.destkey:
-		destkey = args.destkey
+	if args.name in bot.config["agent-instances"]:
+		destkey = "agent-instances"
+	elif args.name in bot.config["module-instances"]:
+		destkey = "module-instances"
 	else:
-		is_agent  = args.name in bot.config["agent-instances"]
-		is_module = args.name in bot.config["module-instances"]
-		if is_agent == is_module:
-			if is_agent:
-				print("Both an agent and module exist with that name. -a or -m must be specified.")
-			else:
-				print("No such agent or module exists.")
-			return
-		else:
-			destkey = "agent-instances" if is_agent else "module-instances"
+		print('No such module or agent exists.')
+		return
 	pkgconf = bot.config[destkey][args.name]
 
 	# Show or edit the config?
@@ -416,8 +409,6 @@ if __name__ == "__main__":
 	config_cmd.add_argument("-s", "--show", action="store_true", help="show the configuration rather than set it", required=False)
 	config_cmd.add_argument("-k", "--key", help="key to set or key to display with -s", required=False)
 	config_cmd.add_argument("-v", "--value", help="value to set key to", required=False)
-	config_cmd.add_argument("-a", "--agent", dest="destkey", action="store_const", const="agent-instances", help="configure the instance as an agent. Only requried when an agent and a module share a name")
-	config_cmd.add_argument("-m", "--module", dest="destkey", action="store_const", const="module-instances", help="configure instance as a module. Only required when an agent and a module share a name")
 	config_cmd.add_argument("-t", "--type", choices=["string", "number", "boolean"], help="the type used while setting a config value with -k. If not given, it uses the type of the existing value")
 
 	args = parser.parse_args()
