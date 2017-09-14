@@ -44,6 +44,9 @@ class TestCore(util.HalibotTestCase):
 
 		self.assertTrue(stub.inited)
 		self.assertEqual(stub, self.bot.objects.get('stub_mod'))
+		self.assertEqual(stub, self.bot.objects.modules.get('stub_mod'))
+		self.assertEqual(len(self.bot.objects.agents.keys()), 0)
+
 
 	def test_add_agent(self):
 		stub = StubAgent(self.bot)
@@ -51,6 +54,8 @@ class TestCore(util.HalibotTestCase):
 
 		self.assertTrue(stub.inited)
 		self.assertEqual(stub, self.bot.objects.get('stub_agent'))
+		self.assertEqual(stub, self.bot.objects.agents.get('stub_agent'))
+		self.assertEqual(len(self.bot.objects.modules.keys()), 0)
 
 	def test_send_recv(self):
 		agent = StubAgent(self.bot)
