@@ -18,8 +18,12 @@ class HalObject():
 		self.sync_replies = defaultdict(lambda: []) # UUID -> [Message, ...]
 
 		self.eventloop = asyncio.SelectorEventLoop()
-		self._thread = Thread(target=self.eventloop.run_forever)
+		self._thread = Thread(target=self._run_eventloop)
 		self._thread.start()
+
+	def _run_eventloop(self):
+		self.eventloop.run_forever()
+		self.eventloop.close()
 
 	def _shutdown(self):
 		self.eventloop.call_soon_threadsafe(self.eventloop.stop)
