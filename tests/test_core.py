@@ -15,6 +15,17 @@ class StubModule(halibot.HalModule):
 	def receive(self, msg):
 		self.received.append(msg)
 
+class StubReplier(halibot.HalModule):
+	inited = False
+
+	def init(self):
+		self.inited = True
+		self.received = []
+
+	def receive(self, msg):
+		self.received.append(msg)
+		self.reply(msg, body=msg.body + "bar")
+
 class StubAgent(halibot.HalAgent):
 	inited = False
 
@@ -100,6 +111,16 @@ class TestCore(util.HalibotTestCase):
 		self.assertEqual('stub_agent', mod2.received[1].origin)
 		self.assertEqual('stub_agent', mod2.received[2].origin)
 
+	def test_sync_send(self):
+		agent = StubAgent(self.bot)
+		mod = StubReplier(self.bot)
+		self.bot.add_instance('stub_agent', agent)
+		self.bot.add_instance('stub_module', mod)
+
+		foo = halibot.Message(body='foo')
+		rep = agent.sync_send_to(foo, ['stub_module'])
+
+		self.assertEqual(rep["stub_module"][0].body, "foobar")
+
 if __name__ == '__main__':
 	unittest.main()
-
