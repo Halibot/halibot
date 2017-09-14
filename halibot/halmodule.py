@@ -10,10 +10,6 @@ class HalModule(HalObject):
 		author = kwargs.get('author', msg0.author)
 		origin = kwargs.get('origin', msg0.origin)
 
-		# For deprecation, remove for 1.0
-		if 'context' in kwargs:
-			msg.context = kwargs['context']
-
 		msg = Message(body=body, type=mtype, author=author, origin=origin)
 
 		# Synchronous reply?
