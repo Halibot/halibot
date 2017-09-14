@@ -11,7 +11,6 @@ from queue import Queue,Empty
 from .halmodule import HalModule
 from .halagent import HalAgent
 from .halauth import HalAuth
-from .loader import Loader
 
 # Avoid appending "." if it i
 if "." not in sys.path:
@@ -75,11 +74,6 @@ class Halibot():
 			self.config = json.loads(f.read())
 			halibot.packages.__path__ = self.config.get("package-path", [])
 
-			# Deprecated; remove with 1.0
-			self.agent_loader = Loader(self.config["package-path"], HalAgent)
-			self.module_loader = Loader(self.config["package-path"], HalModule)
-
-
 	def _get_class_from_package(self, pkgname, clsname):
 		pkg = self.get_package(pkgname)
 		if pkg == None:
@@ -102,13 +96,7 @@ class Halibot():
 			conf = inst[k]
 			split = conf["of"].split(":")
 
-			if len(split) == 1:
-				# deprecated; remove with 1.0
-				if key == "modules":
-					obj = self.module_loader.get(conf["of"])
-				else:
-					obj = self.agent_loader.get(conf["of"])
-			elif len(split) == 2:
+			if len(split) == 2:
 				obj = self._get_class_from_package(split[0], split[1])
 			else:
 				self.log.error("Invalid class identifier {}, must contain only 1 ':'".format(conf["of"]))
@@ -119,7 +107,6 @@ class Halibot():
 	def get_package(self, name):
 		return importlib.import_module('halibot.packages.' + name)
 
-	# TODO: Reload a class, and restart all modules of that class
 	def reload(self, name):
 		parent = 'halibot.packages.' + name
 		for k,o in self.objects.items():
@@ -128,8 +115,6 @@ class Halibot():
 				mod = importlib.reload(importlib.import_module(o.__module__))
 				cls = getattr(mod, o.__class__.__name__)
 				self.add_instance(k, cls(self, o.config))
-
-
 
 	# Restart a module instance by name
 	def restart(self, name):
