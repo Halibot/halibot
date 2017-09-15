@@ -1,4 +1,4 @@
-from .halibot import Halibot
+from .halibot import Halibot, Version
 from .halagent import HalAgent
 from .halmodule import HalModule
 from .halobject import HalObject, SyncSendSelfException

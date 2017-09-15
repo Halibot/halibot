@@ -184,5 +184,64 @@ class TestCore(util.HalibotTestCase):
 		self.assertEqual(agent.sync_send_to(msgt1, ['stub_module'])['stub_module'][0].body, topic1_text)
 		self.assertEqual(agent.sync_send_to(msgt2, ['stub_module'])['stub_module'][0].body, topic2_text)
 
+	def test_version_class(self):
+		# Test major comparison
+		self.assertTrue(halibot.Version("1.0.0") >= halibot.Version("0.1.0"))
+		self.assertTrue(halibot.Version("0.1.0") <= halibot.Version("1.0.0"))
+		self.assertTrue(halibot.Version("1.0.0") > halibot.Version("0.1.0"))
+		self.assertTrue(halibot.Version("0.1.0") < halibot.Version("1.0.0"))
+
+		# Test minor comparison
+		self.assertTrue(halibot.Version("1.1.0") >= halibot.Version("1.0.0"))
+		self.assertTrue(halibot.Version("1.0.0") <= halibot.Version("1.1.0"))
+		self.assertTrue(halibot.Version("1.1.0") > halibot.Version("1.0.0"))
+		self.assertTrue(halibot.Version("1.0.0") < halibot.Version("1.1.0"))
+
+		# Test negatives of above
+		self.assertFalse(halibot.Version("1.0.0") <= halibot.Version("0.1.0"))
+		self.assertFalse(halibot.Version("0.1.0") >= halibot.Version("1.0.0"))
+		self.assertFalse(halibot.Version("1.0.0") < halibot.Version("0.1.0"))
+		self.assertFalse(halibot.Version("0.1.0") > halibot.Version("1.0.0"))
+
+		self.assertFalse(halibot.Version("1.1.0") <= halibot.Version("1.0.0"))
+		self.assertFalse(halibot.Version("1.0.0") >= halibot.Version("1.1.0"))
+		self.assertFalse(halibot.Version("1.1.0") < halibot.Version("1.0.0"))
+		self.assertFalse(halibot.Version("1.0.0") > halibot.Version("1.1.0"))
+
+		# Test equalities
+		self.assertEqual(halibot.Version("1.0.0"), halibot.Version("1.0.0"))
+		self.assertNotEqual(halibot.Version("1.0.0"), halibot.Version("1.0.1"))
+		self.assertNotEqual(halibot.Version("1.0.0"), halibot.Version("1.1.1"))
+		self.assertNotEqual(halibot.Version("1.0.0"), halibot.Version("0.0.0"))
+
+	def test_version_check(self):
+		class VersionOkModule(halibot.HalModule):
+			HAL_MINIMUM = "0.0.1"
+			HAL_MAXIMUM = "1.0.0"
+
+		class VersionFailMinModule(halibot.HalModule):
+			HAL_MINIMUM = "1.0.0"
+			HAL_MAXIMUM = "1.0.0"
+
+		class VersionFailMaxModule(halibot.HalModule):
+			HAL_MINIMUM = "0.0.1"
+			HAL_MAXIMUM = "0.0.1"
+
+		mod0 = VersionOkModule(self.bot) # Load ok
+		mod1 = VersionFailMinModule(self.bot) # Fail minimum
+		mod2 = VersionFailMaxModule(self.bot) # Fail maximum
+
+		self.bot.VERSION = "0.1.0"
+
+		self.assertTrue(self.bot._check_version(mod0))
+		self.assertFalse(self.bot._check_version(mod1))
+		self.assertFalse(self.bot._check_version(mod2))
+
+		# Add the instances so they get cleaned up properly...
+		self.bot.add_instance("mod0", mod0)
+		self.bot.add_instance("mod1", mod1)
+		self.bot.add_instance("mod2", mod2)
+
+
 if __name__ == '__main__':
 	unittest.main()
