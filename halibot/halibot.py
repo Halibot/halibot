@@ -7,6 +7,7 @@ import threading
 import os, sys
 import importlib
 import halibot.packages
+from distutils.version import StrictVersion as Version
 from queue import Queue,Empty
 from .halmodule import HalModule
 from .halagent import HalAgent
@@ -29,6 +30,8 @@ class ObjectDict(dict):
 
 
 class Halibot():
+
+	VERSION = "0.1.0"
 
 	config = {}
 
@@ -63,6 +66,22 @@ class Halibot():
 
 		self.log.info("Halibot shutdown. Threads left: " + str(threading.active_count()))
 
+	def _check_version(self, obj):
+		v = Version(self.VERSION)
+		if not hasattr(obj, "HAL_MINIMUM"):
+			self.log.warn("Module class '{}' does not define a minimum version, trying to load anyway...".format(obj.__class__.__name__))
+			return True
+
+		if v < Version(obj.HAL_MINIMUM):
+			self.log.error("Rejecting load of '{}', requires minimum Halibot version '{}'. (Currently running '{}')".format(obj.__class__.__name__, obj.HAL_MINIMUM, self.VERSION))
+			return False
+
+		if hasattr(obj, "HAL_MAXIMUM"):
+			if v >= Version(obj.HAL_MAXIMUM):
+				self.log.error("Rejecting load of '{}', requires maximum Halibot version '{}'. (Currently running '{}')".format(obj.__class__.__name__, obj.HAL_MAXIMUM, self.VERSION))
+				return False
+		return True
+
 	def add_instance(self, name, inst):
 		self.objects[name] = inst
 		inst.name = name
@@ -94,8 +113,8 @@ class Halibot():
 
 			if len(split) == 2:
 				obj = self._get_class_from_package(*split)
-				if obj:
-					return obj(self, conf=conf)
+				if obj and self._check_version(obj):
+						return obj(self, conf=conf)
 			else:
 				self.log.error("Invalid class identifier {}, must contain only 1 ':'".format(conf["of"]))
 			return None

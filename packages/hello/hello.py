@@ -10,6 +10,16 @@ from halibot import HalModule, Message
 #  If so, responds with "Hello World!" via the same way the message was received
 class Hello(HalModule):
 
+	# Module version strings
+	#  These should be defined so that Halibot can safety-check modules prior to
+	#  loading that may use unimplemented or deprecated features
+	#  VERSION - what is the version of this module (for reference), using semver.
+	#  HAL_MINIMUM - minimum version of Halibot core that this module will work with
+	#  HAL_MAXIMUM - (optional) reject Halibot core versions newer than this.
+
+	VERSION = "1.0.0"
+	HAL_MINIMUM = "0.1"
+
 	# Called when the module is initialized
 	#  Put any initialization logic here, instead of __init__()
 	#  In this case, no initialization is needed, thus it is a no-op
