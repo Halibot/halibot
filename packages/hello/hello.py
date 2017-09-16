@@ -30,3 +30,10 @@ class Hello(HalModule):
 	# NOTE: The HalModule also includes a send() method, which reply() calls out to
 	#  reply() is the same as send()'ing a copy of the received message, with a new body
 	#  Do NOT override send() or reply(), they are already implemented for you.
+
+	# Define help text for our module. This will be called by a Help module if loaded.
+	#  See doc/HelpInterface.md for more details
+	def help(self, args=""):
+		if args == "!hello":
+			return "Displays a wonderful greeting! :D"
+		return "A delightful greeting module! Available command(s): !hello"
