@@ -79,12 +79,7 @@ class TestCore(util.HalibotTestCase):
 		agent.connect(mod2)
 		agent.dispatch(qua) # 3
 
-		# TODO do something sensible here
-		timeout = 10
-		increment = .1
-		while timeout > 0 and len(mod.received) != 4 and len(mod2.received) != 3:
-			time.sleep(increment)
-			timeout -= increment
+		util.waitOrTimeout(100, lambda: len(mod.received) == 4 and len(mod2.received) == 3)
 
 		# Check mod received mesages
 		self.assertEqual(4, len(mod.received))
@@ -134,11 +129,7 @@ class TestCore(util.HalibotTestCase):
 		foo = halibot.Message(body='foo')
 		agent.send_to(foo, ['stub_module'])
 
-		timeout = 10
-		increment = .1
-		while timeout > 0 and len(agent.received) == 0:
-			time.sleep(increment)
-			timeout -= increment
+		util.waitOrTimeout(100, lambda: len(agent.received) != 0)
 
 		self.assertEqual(len(agent.received), 1)
 		self.assertEqual(agent.received[0].body, "foobar")

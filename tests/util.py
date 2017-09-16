@@ -3,6 +3,16 @@
 import halibot
 import unittest
 import logging
+import time
+
+def waitOrTimeout(timeout, condition):
+	for i in range(timeout):
+		if condition():
+			break
+		time.sleep(0.1)
+	else:
+		print("warning: timeout reached")
+
 
 # Provides a unique bot in self.bot for every test case
 class HalibotTestCase(unittest.TestCase):
