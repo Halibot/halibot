@@ -73,7 +73,13 @@ class HalObject():
 
 	async def _receive(self, msg):
 		try:
-			self.receive(msg)
+			fname = 'receive_' + msg.type
+			if hasattr(self, fname) and callable(getattr(self, fname)):
+				# Type specific receive function
+				getattr(self, fname)(msg)
+			else:
+				# Generic receive function
+				self.receive(msg)
 		except Exception as e:
 			traceback.print_exc()
 
