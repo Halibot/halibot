@@ -11,6 +11,11 @@ topic2_text = 'Help text two'
 class StubModule(halibot.HalModule):
 	inited = False
 
+	topics = {
+		'topic1': lambda: topic1_text,
+		'topic2': topic2_text
+	}
+
 	def init(self):
 		self.inited = True
 		self.received = []
@@ -21,12 +26,6 @@ class StubModule(halibot.HalModule):
 
 	def receive_mytype(self, msg):
 		self.received_mytype.append(msg)
-
-	def help_topic1(self):
-		return topic1_text
-
-	def help_topic2(self):
-		return topic2_text
 
 class StubReplier(halibot.HalModule):
 	inited = False
@@ -178,11 +177,9 @@ class TestCore(util.HalibotTestCase):
 		msgt1 = halibot.Message(type='help', body=['topic1'])
 		msgt2 = halibot.Message(type='help', body=['topic2'])
 
-		self.assertEqual(agent.sync_send_to(msgt0, ['stub_module'])['stub_module'][0].body, ['topic1', 'topic2'])
+		self.assertEqual(set(agent.sync_send_to(msgt0, ['stub_module'])['stub_module'][0].body), set(['topic1', 'topic2']))
 		self.assertEqual(agent.sync_send_to(msgt1, ['stub_module'])['stub_module'][0].body, topic1_text)
 		self.assertEqual(agent.sync_send_to(msgt2, ['stub_module'])['stub_module'][0].body, topic2_text)
-
-		
 
 if __name__ == '__main__':
 	unittest.main()
