@@ -87,16 +87,16 @@ class HalObject():
 		pass
 
 	def receive_help(self, msg):
-		prefix = 'help_'
-		if msg.body == []:
-			# Retrieve available topics
-			topics = [a[len(prefix):] for a in dir(self) if a.startswith(prefix)]
-			self.reply(msg, body=topics)
-		else:
-			# Retrieve help text for topic
-			fname = prefix + '_'.join(msg.body)
-			if hasattr(self, fname) and callable(getattr(self, fname)):
-				self.reply(msg, body=getattr(self, fname)())
+		if hasattr(self, 'topics'):
+			if msg.body == []:
+				# Retrieve available topics
+				self.reply(msg, body=list(self.topics.keys()))
+			else:
+				# Retrieve help text for topic
+				key = '/'.join(msg.body)
+				if key in self.topics:
+					t = self.topics[key]
+					self.reply(msg, body=t() if callable(t) else t)
 
 	class Configurer(HalConfigurer):
 		pass
