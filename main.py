@@ -15,6 +15,7 @@ import code
 def h_init(args):
 	confpath = os.path.join(args.path, "config.json")
 	pkgpath  = os.path.join(args.path, "packages")
+	permpath = os.path.join(args.path, "permissions.json")
 
 	if not os.path.exists(args.path):
 		os.mkdir(args.path)
@@ -41,6 +42,10 @@ def h_init(args):
 
 	with open(confpath, "w") as f:
 		f.write(json.dumps(config, sort_keys=True, indent=4))
+
+	if not os.path.exists(permpath):
+		with open(permpath, "w") as f:
+			f.write(json.dumps({}, sort_keys=True, indent=4))
 
 	if not os.path.exists(pkgpath):
 		os.mkdir(pkgpath)
