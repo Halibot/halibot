@@ -8,7 +8,7 @@ class HalModule(HalObject):
 		body = kwargs.get('body', msg0.body)
 		mtype = kwargs.get('type', msg0.type)
 		author = kwargs.get('author', msg0.author)
-		origin = kwargs.get('origin', msg0.origin)
+		origin = kwargs.get('origin', self.name)
 
 		msg = Message(body=body, type=mtype, author=author, origin=origin)
 
@@ -16,7 +16,7 @@ class HalModule(HalObject):
 		if msg0.sync:
 			self.sync_replies[msg0.uuid].append(msg)
 		else:
-			self.send_to(msg, [ msg.origin ])
+			self.send_to(msg, [ msg0.origin ])
 
 	def hasPermission(self, msg, perm):
 		return self._hal.auth.hasPermission(msg.origin, msg.identity, perm)
