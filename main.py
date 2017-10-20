@@ -45,7 +45,7 @@ def h_init(args):
 
 	if not os.path.exists(permpath):
 		with open(permpath, "w") as f:
-			f.write(json.dumps({}, sort_keys=True, indent=4))
+			f.write(json.dumps([], sort_keys=True, indent=4))
 
 	if not os.path.exists(pkgpath):
 		os.mkdir(pkgpath)
