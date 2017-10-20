@@ -167,6 +167,9 @@ class TestCore(util.HalibotTestCase):
 
 		self.assertEqual(rep["stub_module"][0].body, "foobar")
 
+		with self.assertRaises(halibot.SyncSendSelfException):
+			agent.sync_send_to(foo, ['stub_agent'])
+
 	def test_help(self):
 		agent = StubAgent(self.bot)
 		mod = StubModule(self.bot)

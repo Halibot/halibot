@@ -6,6 +6,8 @@ from threading import Thread
 from collections import defaultdict
 from .halconfigurer import HalConfigurer
 
+class SyncSendSelfException(Exception): 'Cannot sync_send_to oneself.'
+
 class HalObject():
 
 	def __init__(self, hal, conf={}):
@@ -58,6 +60,11 @@ class HalObject():
 		return ret
 
 	def sync_send_to(self, msg, dests):
+		# Check for potential deadlocks
+		for ri in dests:
+			if ri.split('/')[0] == self.name:
+				raise SyncSendSelfException
+
 		msg.sync = True
 
 		futs = self.send_to(msg, dests)
