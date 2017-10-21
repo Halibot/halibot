@@ -332,5 +332,34 @@ class TestCore(util.HalibotTestCase):
 		self.assertTrue(mod.inited)
 		self.assertFalse(mod2.inited)
 
+	def test_invoke(self):
+		class InvokeModule(halibot.HalModule):
+			def receive(self, msg):
+				ret = self.invoke("stub_target","target", msg.body, foo=msg.body)
+				self.reply(msg, body="target said: " + msg.body)
+		class TargetModule(halibot.HalModule):
+			def init(self):
+				self.invoked = False
+			def target(self, *args, **kwargs):
+				self.invoked = True
+				return " ".join(args) + " " + " ".join(kwargs.keys())
+
+		inv = InvokeModule(self.bot)
+		tar = TargetModule(self.bot)
+		agent = StubAgent(self.bot)
+
+		self.bot.add_instance("stub_invoker", inv)
+		self.bot.add_instance("stub_target", tar)
+		self.bot.add_instance("stub_agent", agent)
+
+		agent.dispatch(halibot.Message(body="bar"))
+
+		util.waitOrTimeout(100, lambda: len(agent.received) != 0)
+
+		self.assertTrue(tar.invoked)
+		self.assertEqual(1, len(agent.received))
+		self.assertTrue("target said: bar foo")
+
+
 if __name__ == '__main__':
 	unittest.main()
