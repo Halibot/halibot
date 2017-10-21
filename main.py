@@ -66,15 +66,15 @@ def h_run(args):
 	logfile = None
 	loglevel = logging.DEBUG
 	loglevel_str = "DEBUG"
-	loglevels = { 
-		"CRITICAL": logging.CRITICAL, 
-		"ERROR": logging.ERROR, 
-		"WARNING": logging.WARNING, 
+	loglevels = {
+		"CRITICAL": logging.CRITICAL,
+		"ERROR": logging.ERROR,
+		"WARNING": logging.WARNING,
 		"INFO": logging.INFO,
-		"DEBUG": logging.DEBUG, 
+		"DEBUG": logging.DEBUG,
 		"NOTSET": logging.NOTSET
 	}
-	
+
 	# Set log level if argument is provided
 	if args.log_level:
 		loglevel_str = args.log_level
