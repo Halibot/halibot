@@ -259,8 +259,7 @@ def h_add(args):
 
 		bot.config[destkey][name] = conf
 
-	with open("config.json","w") as f:
-		f.write(json.dumps(bot.config, sort_keys=True, indent=4))
+	bot._write_config()
 
 def h_rm(args):
 	# In order to access the config easily
@@ -277,8 +276,7 @@ def h_rm(args):
 			continue
 		print("Removed '{}'.".format(name))
 
-	with open("config.json", "w") as f:
-		f.write(json.dumps(bot.config, sort_keys=True, indent=4))
+	bot._write_config()
 
 def h_config(args):
 	# In order to access the config easily
@@ -360,8 +358,7 @@ def h_config(args):
 			(name, conf) = cls.configure(pkgconf, name=args.name)
 			bot.config[destkey][name] = conf
 
-		with open("config.json", "w") as f:
-			f.write(json.dumps(bot.config, sort_keys=True, indent=4))
+		bot._write_config()
 
 if __name__ == "__main__":
 	subcmds = {
