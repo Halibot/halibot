@@ -315,6 +315,22 @@ class TestCore(util.HalibotTestCase):
 
 		self.assertEqual(0, len(agent.received))
 
+	def test_restart(self):
+		mod = StubModule(self.bot)
+		mod2 = StubModule(self.bot)
+
+		self.bot.add_instance("stub_module", mod)
+		self.bot.add_instance("stub_module2", mod2)
+
+		# .inited should be reset to True if module was restarted
+		mod.inited = False
+		mod2.inited = False  #...but this module should be unaffected
+
+		self.bot.restart("stub_module")
+		self.bot.restart("nope")
+
+		self.assertTrue(mod.inited)
+		self.assertFalse(mod2.inited)
 
 if __name__ == '__main__':
 	unittest.main()
