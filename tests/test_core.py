@@ -360,6 +360,38 @@ class TestCore(util.HalibotTestCase):
 		self.assertEqual(1, len(agent.received))
 		self.assertTrue("target said: bar foo")
 
+	def test_module_fail_recover(self):
+		class ExceptionModule(halibot.HalModule):
+			def init(self):
+				self.received = []
+			def receive(self, msg):
+				self.received.append(msg)
+				if msg.body == "explode":
+					raise NotImplementedError()
+
+		agent = StubAgent(self.bot)
+		mod = ExceptionModule(self.bot)
+
+		self.bot.add_instance("stub_agent", agent)
+		self.bot.add_instance("stub_mod", mod)
+
+		self.assertEqual(0, len(agent.received))
+
+		agent.dispatch(halibot.Message(body="foo"))
+		util.waitOrTimeout(100, lambda: len(mod.received) == 1)
+		self.assertEqual(1, len(mod.received))
+		self.assertEqual("foo", mod.received[0].body)
+
+		agent.dispatch(halibot.Message(body="explode"))
+		util.waitOrTimeout(100, lambda: len(mod.received) == 2)
+		self.assertEqual(2, len(mod.received))
+		self.assertEqual("explode", mod.received[1].body)
+
+		agent.dispatch(halibot.Message(body="foo"))
+		util.waitOrTimeout(100, lambda: len(mod.received) == 3)
+		self.assertEqual(3, len(mod.received))
+		self.assertEqual("foo", mod.received[2].body)
+
 
 if __name__ == '__main__':
 	unittest.main()
