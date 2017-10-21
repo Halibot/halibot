@@ -93,6 +93,11 @@ class Halibot():
 			self.config = json.loads(f.read())
 			halibot.packages.__path__ = self.config.get("package-path", [])
 
+	def _write_config(self):
+		with open("config.json", "w") as f:
+			f.write(json.dumps(self.config, sort_keys=True, indent=4))
+
+
 	def _get_class_from_package(self, pkgname, clsname):
 		pkg = self.get_package(pkgname)
 		if pkg == None:
