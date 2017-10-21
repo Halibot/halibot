@@ -1,4 +1,4 @@
-import logging, traceback
+import logging
 import asyncio
 import inspect
 import copy
@@ -88,7 +88,7 @@ class HalObject():
 				# Generic receive function
 				self.receive(msg)
 		except Exception as e:
-			traceback.print_exc()
+			self.log.error("Exception in message receive", exc_info=True)
 
 	def receive(self, msg):
 		pass
