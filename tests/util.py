@@ -11,7 +11,7 @@ def waitOrTimeout(timeout, condition):
 			break
 		time.sleep(0.1)
 	else:
-		print("warning: timeout reached")
+		print("warning: timeout reached") # pragma: no cover
 
 
 # Provides a unique bot in self.bot for every test case
