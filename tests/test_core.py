@@ -94,7 +94,7 @@ class TestCore(util.HalibotTestCase):
 
 		agent.dispatch(qua2) # 3
 
-		util.waitOrTimeout(100, lambda: len(mod.received) == 4 and len(mod2.received) == 3)
+		util.waitOrTimeout(100, lambda: len(mod.received) == 4 and len(mod2.received) == 3 and len(mod.received_mytype) == 1 and len(mod2.received_mytype) == 1)
 
 		# Check mod received mesages
 		self.assertEqual(4, len(mod.received))
