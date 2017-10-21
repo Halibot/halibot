@@ -1,3 +1,4 @@
+get_input = input
 
 class Option():
 	def __init__(self, key, prompt=None, default=None):
@@ -11,7 +12,7 @@ class Option():
 			prompt += ' [' + str(self.default) + ']'
 		prompt += ': '
 
-		v = input(prompt)
+		v = get_input(prompt)
 		if v == '': return self.default
 		return v
 
@@ -84,4 +85,3 @@ class HalConfigurer():
 
 	def configure(self):
 		pass
-
