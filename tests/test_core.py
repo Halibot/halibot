@@ -38,6 +38,24 @@ class StubReplier(halibot.HalModule):
 		self.received.append(msg)
 		self.reply(msg, body=msg.body + "bar")
 
+class StubCommand(halibot.CommandModule):
+	def init(self):
+		self.commands = {
+			"foo": self.foo,
+			"bar": self.bar
+		}
+		self.foo_args = []
+		self.bar_args = []
+
+	def foo(self, args, msg=None):
+		self.foo_args.append(args)
+		self.reply(msg, body="fooed " + args)
+
+	@halibot.AsArgs
+	def bar(self, args, msg=None):
+		self.bar_args.append(args)
+		self.reply(msg, body="barred " + str(len(args)))
+
 class StubAgent(halibot.HalAgent):
 	inited = False
 
@@ -241,6 +259,61 @@ class TestCore(util.HalibotTestCase):
 		self.bot.add_instance("mod0", mod0)
 		self.bot.add_instance("mod1", mod1)
 		self.bot.add_instance("mod2", mod2)
+
+	def test_command(self):
+		mod = StubCommand(self.bot)
+		agent = StubAgent(self.bot)
+		self.bot.add_instance('stub_cagent', agent)
+		self.bot.add_instance('stub_cmodule', mod)
+
+		# Test regular bare string args
+		foo = halibot.Message(body='foo')
+		cmdfoo = halibot.Message(body='!foo')
+		cmdfoo2 = halibot.Message(body='!foo moo')
+
+		# Test AsArgs arg splitting
+		bar = halibot.Message(body='bar')
+		cmdbar = halibot.Message(body='!bar')
+		cmdbar2 = halibot.Message(body='!bar moo')
+		cmdbar3 = halibot.Message(body='!bar moo foo')
+
+		# Test unhandled command
+		baz = halibot.Message(body="!baz")
+
+		agent.dispatch(foo)
+		agent.dispatch(cmdfoo)
+		agent.dispatch(cmdfoo2)
+
+		util.waitOrTimeout(100, lambda: len(agent.received) == 2)
+
+		self.assertEqual(2, len(agent.received))
+		self.assertEqual("fooed ", agent.received[0].body)
+		self.assertEqual("", mod.foo_args[0])
+		self.assertEqual("fooed moo", agent.received[1].body)
+		self.assertEqual("moo", mod.foo_args[1])
+
+		agent.received = []
+
+		agent.dispatch(bar)
+		agent.dispatch(cmdbar)
+		agent.dispatch(cmdbar2)
+		agent.dispatch(cmdbar3)
+
+		util.waitOrTimeout(100, lambda: len(agent.received) == 3)
+
+		self.assertEqual(3, len(agent.received))
+		self.assertEqual("barred 1", agent.received[0].body)
+		self.assertEqual([""], mod.bar_args[0])
+		self.assertEqual("barred 1", agent.received[1].body)
+		self.assertEqual(["moo"], mod.bar_args[1])
+		self.assertEqual("barred 2", agent.received[2].body)
+		self.assertEqual(["moo", "foo"], mod.bar_args[2])
+
+		agent.received = []
+
+		agent.sync_send_to(baz, [ 'stub_cmodule' ])
+
+		self.assertEqual(0, len(agent.received))
 
 
 if __name__ == '__main__':
