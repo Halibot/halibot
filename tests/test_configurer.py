@@ -52,7 +52,7 @@ class TestConfigurer(unittest.TestCase):
 			# Yay, we type errored as expected
 			return
 
-		self.assertTrue(False)
+		self.assertTrue(False) # pragma: no cover
 
 	@patch('halibot.halconfigurer.get_input', return_value=2.1)
 	def test_optionNumber_int(self, input):
@@ -88,7 +88,7 @@ class TestConfigurer(unittest.TestCase):
 			# Yay, we type errored as expected
 			return
 
-		self.assertTrue(False)
+		self.assertTrue(False) # pragma: no cover
 
 	@patch('halibot.halconfigurer.get_input', return_value=True)
 	def test_optionBoolean_true(self, input):

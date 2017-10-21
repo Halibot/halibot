@@ -42,7 +42,7 @@ class HalAuth():
 
 			with open(self.path, "w") as f:
 				f.write(json.dumps(temp, indent=4))
-		except Exception as e:
+		except Exception as e: # pragma: no cover
 				self.log.error("Error storing permissions: {}".format(e))
 
 	def grantPermission(self, ri, identity, perm):

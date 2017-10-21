@@ -84,4 +84,4 @@ class HalConfigurer():
 		self.option(Option.Boolean, key, **kwargs)
 
 	def configure(self):
-		pass
+		pass # pragma: no cover
