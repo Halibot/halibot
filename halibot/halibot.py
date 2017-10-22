@@ -87,22 +87,28 @@ class Halibot():
 
 		return obj
 
+	# Load a halobject from a package descriptor (e.g. hello:Hello), but does NOT
+	#  start or add it to the current instance.
+	def load_object(self, pkg, conf={}):
+			split = pkg.split(":")
+
+			if len(split) == 2:
+				obj = self._get_class_from_package(*split)
+				if obj:
+					return obj(self, conf=conf)
+			else:
+				self.log.error("Invalid class identifier {}, must contain only 1 ':'".format(conf["of"]))
+			return None
+
 	def _instantiate_objects(self, key):
 		inst = self.config[key + "-instances"]
 
 		for k in inst.keys():
-			# TODO include directive
-
 			conf = inst[k]
-			split = conf["of"].split(":")
+			obj = self.load_object(conf["of"], conf=conf)
 
-			if len(split) == 2:
-				obj = self._get_class_from_package(split[0], split[1])
-			else:
-				self.log.error("Invalid class identifier {}, must contain only 1 ':'".format(conf["of"]))
-				continue
-
-			self.add_instance(k, obj(self, conf))
+			if obj:
+				self.add_instance(k, obj)
 
 	def get_package(self, name):
 		return importlib.import_module('halibot.packages.' + name)
