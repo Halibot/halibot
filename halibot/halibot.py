@@ -40,6 +40,7 @@ class Halibot():
 
 		self.use_config = kwargs.get("use_config", True)
 		self.use_auth = kwargs.get("use_auth", True)
+		self.workdir = kwargs.get("workdir", ".")
 
 		self.auth = HalAuth()
 		self.objects = ObjectDict()
@@ -70,12 +71,12 @@ class Halibot():
 		self.log.info("Instantiated object '" + name + "'")
 
 	def _load_config(self):
-		with open("config.json","r") as f:
+		with open(os.path.join(self.workdir, "config.json"), "r") as f:
 			self.config = json.loads(f.read())
 			halibot.packages.__path__ = self.config.get("package-path", [])
 
 	def _write_config(self):
-		with open("config.json", "w") as f:
+		with open(os.path.join(self.workdir, "config.json"), "w") as f:
 			f.write(json.dumps(self.config, sort_keys=True, indent=4))
 
 
