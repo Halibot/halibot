@@ -95,8 +95,8 @@ class TestCore(util.HalibotTestCase):
 		self.bot.add_instance('stub_mod', mod)
 		self.bot.add_instance('stub_mod2', mod2)
 
-		# mod should receive: foo, bar, baz, qua
-		# mod2 should receive: foo, bar, qua
+		# mod should receive: bar, baz, qua
+		# mod2 should receive: bar, qua
 		foo = halibot.Message(body='foo')
 		bar = halibot.Message(body='bar')
 		baz = halibot.Message(body='baz', origin='glub_agent')
@@ -112,48 +112,39 @@ class TestCore(util.HalibotTestCase):
 
 		agent.dispatch(qua2) # 3
 
-		util.waitOrTimeout(100, lambda: len(mod.received) == 4 and len(mod2.received) == 3 and len(mod.received_mytype) == 1 and len(mod2.received_mytype) == 1)
+		util.waitOrTimeout(100, lambda: len(mod.received) == 3 and len(mod2.received) == 2 and len(mod.received_mytype) == 1 and len(mod2.received_mytype) == 1)
 
 		# Check mod received mesages
-		self.assertEqual(4, len(mod.received))
-		self.assertEqual(foo.body, mod.received[0].body)
-		self.assertEqual(bar.body, mod.received[1].body)
-		self.assertEqual(baz.body, mod.received[2].body)
-		self.assertEqual(qua.body, mod.received[3].body)
-		self.assertEqual('', mod.received[0].whom())
-		self.assertEqual('able', mod.received[1].whom())
+		self.assertEqual(3, len(mod.received))
+		self.assertEqual(bar.body, mod.received[0].body)
+		self.assertEqual(baz.body, mod.received[1].body)
+		self.assertEqual(qua.body, mod.received[2].body)
+		self.assertEqual('able', mod.received[0].whom())
+		self.assertEqual('', mod.received[1].whom())
 		self.assertEqual('', mod.received[2].whom())
-		self.assertEqual('', mod.received[3].whom())
-		self.assertEqual('stub_mod', mod.received[0].target)
-		self.assertEqual('stub_mod/able', mod.received[1].target)
+		self.assertEqual('stub_mod/able', mod.received[0].target)
+		self.assertEqual('stub_mod', mod.received[1].target)
 		self.assertEqual('stub_mod', mod.received[2].target)
-		self.assertEqual('stub_mod', mod.received[3].target)
 		self.assertEqual('stub_agent', mod.received[0].origin)
-		self.assertEqual('stub_agent', mod.received[1].origin)
-		self.assertEqual('glub_agent', mod.received[2].origin)
-		self.assertEqual('stub_agent', mod.received[3].origin)
+		self.assertEqual('glub_agent', mod.received[1].origin)
+		self.assertEqual('stub_agent', mod.received[2].origin)
 
 		# Check mod2 received mesages
-		self.assertEqual(3, len(mod2.received))
-		self.assertEqual(foo.body, mod2.received[0].body)
-		self.assertEqual(bar.body, mod2.received[1].body)
-		self.assertEqual(qua.body, mod2.received[2].body)
-		self.assertEqual('', mod.received[0].whom())
-		self.assertEqual('able', mod.received[1].whom())
-		self.assertEqual('', mod.received[2].whom())
-		self.assertEqual('stub_mod2', mod2.received[0].target)
-		self.assertEqual('stub_mod2/baker', mod2.received[1].target)
-		self.assertEqual('stub_mod2', mod2.received[2].target)
+		self.assertEqual(2, len(mod2.received))
+		self.assertEqual(bar.body, mod2.received[0].body)
+		self.assertEqual(qua.body, mod2.received[1].body)
+		self.assertEqual('able', mod.received[0].whom())
+		self.assertEqual('', mod.received[1].whom())
+		self.assertEqual('stub_mod2/baker', mod2.received[0].target)
+		self.assertEqual('stub_mod2', mod2.received[1].target)
 		self.assertEqual('stub_agent', mod2.received[0].origin)
 		self.assertEqual('stub_agent', mod2.received[1].origin)
-		self.assertEqual('stub_agent', mod2.received[2].origin)
 
 		# Check mytype messages
 		self.assertEqual(1, len(mod.received_mytype))
 		self.assertEqual(1, len(mod2.received_mytype))
 		self.assertEqual(qua2.body, mod.received_mytype[0].body)
 		self.assertEqual(qua2.body, mod2.received_mytype[0].body)
-
 
 	def test_send_reply(self):
 		agent = StubAgent(self.bot)
@@ -265,6 +256,7 @@ class TestCore(util.HalibotTestCase):
 		agent = StubAgent(self.bot)
 		self.bot.add_instance('stub_cagent', agent)
 		self.bot.add_instance('stub_cmodule', mod)
+		self.bot.add_route('stub_cagent', 'stub_cmodule')
 
 		# Test regular bare string args
 		foo = halibot.Message(body='foo')
@@ -351,6 +343,8 @@ class TestCore(util.HalibotTestCase):
 		self.bot.add_instance("stub_invoker", inv)
 		self.bot.add_instance("stub_target", tar)
 		self.bot.add_instance("stub_agent", agent)
+		self.bot.add_route("stub_agent", "stub_invoker")
+		self.bot.add_route("stub_agent", "stub_target")
 
 		agent.dispatch(halibot.Message(body="bar"))
 
@@ -374,6 +368,7 @@ class TestCore(util.HalibotTestCase):
 
 		self.bot.add_instance("stub_agent", agent)
 		self.bot.add_instance("stub_mod", mod)
+		self.bot.add_route("stub_agent", "stub_mod")
 
 		self.assertEqual(0, len(agent.received))
 

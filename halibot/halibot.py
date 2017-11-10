@@ -32,10 +32,6 @@ class ObjectDict(dict):
 class Halibot():
 
 	VERSION = "0.2.0"
-
-	config = {}
-
-	running = False
 	log = None
 
 	def __init__(self, **kwargs):
@@ -47,6 +43,8 @@ class Halibot():
 
 		self.auth = HalAuth()
 		self.objects = ObjectDict()
+		self.config = {}
+		self.running = False
 
 	# Start the Hal instance
 	def start(self, block=True):
