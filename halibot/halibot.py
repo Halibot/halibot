@@ -47,6 +47,7 @@ class Halibot():
 
 		self.auth = HalAuth()
 		self.objects = ObjectDict()
+		self.routing = HalRoute(self)
 
 	# Start the Hal instance
 	def start(self, block=True):
@@ -58,6 +59,8 @@ class Halibot():
 			self._instantiate_objects("module")
 			if self.use_auth:
 				self.auth.load_perms(self.config.get("auth-path","permissions.json"))
+
+		self.routing.compile()
 
 	def shutdown(self):
 		self.log.info("Shutting down halibot...");
@@ -155,3 +158,101 @@ class Halibot():
 			o.init()
 		else:
 			self.log.warning("Failed to restart instance '{}'".format(name))
+
+class HalRoute():
+
+	class Route():
+		def __init__(self, pattern, targets):
+			self.reg = re.compile(pattern)
+			self.pattern = pattern
+			self.target = target
+
+		def match(self, string):
+			return self.reg.match(string)
+
+	def __init__(self, hal):
+		self.hal = hal
+		self.lookup = []
+		self.passive = {}
+		self.active = {}
+
+	# Compile a "routing" config object to a lookup table
+	#  Unless data= is set, it loads from config. If the config key isn't set, uses the default
+	def compile(self, data=None):
+		if not data:
+			data = self.hal.config.get("routing", {"table": [".* -> $default"], "containers": {}})
+
+		self.lookup = []
+		self.passive = { c[0]:c[1]["contains"] for c in data["containers"].items() if "using" not in c[1].keys() }
+		self.active = { c[0]:c[1]["contains"] for c in data["containers"].items() if "using" in c[1].keys() }
+
+		for a in data["table"]:
+			# TODO: validate ahead of time probably
+			s,t = a.split(" -> ")
+			self.lookup.append(Route(s, t))
+
+	# Returns a list of targets to send to based on source RI, this is pre-resolved
+	#  This should probably be used for handling send_to() targets
+	def get(self, ri):
+		for r in self.lookup:
+			if r.match(ri):
+				return self.resolve(r.target)
+		return []
+
+	# Add a route to the top of the table
+	def add(self, sreg, target):
+		self.lookup.insert(0, Route(sreg, target))
+
+	# Append a route to the end of the table
+	def append(self, sreg, target):
+		self.lookup.append(Route(sreg, target))
+
+	# Resolve a name to a list of targets, if the name is a passive container
+	def resolve(self, name):
+		if name not in self.passive.keys():
+			# Special case the "default" container to be all modules, if not overridden
+			if name == "$default":
+				return self.hal.objects.modules.keys()
+			return [ name ]
+
+		ret = []
+		# Recursively resolve nested passive containers
+		for t in self.passive[name]:
+			ret += self.resolve(t)
+
+		return ret
+
+	# Similar to resolve(), but also resolves active containers
+	#  Use this to determine if a module is ever to be seen by a message from a particular origin RI
+	def flatten(self, name):
+		# Clear passive containers first
+		ls = self.resolve(name)
+
+		ret = []
+		for r in ls:
+			tmp = self.active.get(r, None)
+			if tmp:
+				for t in tmp["contains"]:
+					# Flatten active's children/resolve passives before adding
+					ret += self.flatten(t)
+			else:
+				# Not an active container, pass it through
+				ret.append(r)
+
+	# Write out a dictionary of what the "routing" key should be
+	def serialize_config(self):
+		ret = {}
+
+		ls = []
+		for l in self.lookup:
+			ls.append("{} -> {}".format(l.pattern, l.target))
+
+		ct = {}
+		for i in self.passive.items():
+			ct[i[0]] = {"contains": i[1]}
+		# TODO: actives, since they weird yo
+
+		ret["table"] = ls
+		ret["containers"] = ct
+
+		return ret
