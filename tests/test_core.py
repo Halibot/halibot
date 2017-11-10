@@ -105,9 +105,9 @@ class TestCore(util.HalibotTestCase):
 
 		agent.dispatch(foo) # 0
 		agent.send_to(bar, [ 'stub_mod/able', 'stub_mod2/baker' ] ) # 1
-		agent.connect(mod)
+		self.bot.add_route('stub_agent', 'stub_mod')
 		agent.dispatch(baz) # 2
-		agent.connect(mod2)
+		self.bot.add_route('stub_agent', 'stub_mod2')
 		agent.dispatch(qua) # 3
 
 		agent.dispatch(qua2) # 3

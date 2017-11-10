@@ -259,6 +259,13 @@ def h_add(args):
 
 		bot.config[destkey][name] = conf
 
+		# Add default route
+		if destkey == "module-instances":
+			bot.add_route("@default-container", name)
+		else:
+			bot.add_route(name, "@default-container")
+
+
 	bot._write_config()
 
 def h_rm(args):

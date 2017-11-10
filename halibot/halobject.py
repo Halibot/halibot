@@ -78,6 +78,14 @@ class HalObject():
 				r[name] = to.sync_replies.pop(msg.uuid)
 		return r
 
+	def dispatch(self, msg):
+		dest = self._hal.route(self.name)
+		self.send_to(msg, dest)
+
+	def sync_dispatch(self, msg):
+		dest = self._hal.route(self.name)
+		self.sync_send_to(msg, dest)
+
 	async def _receive(self, msg):
 		try:
 			fname = 'receive_' + msg.type

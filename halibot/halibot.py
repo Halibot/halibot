@@ -4,7 +4,7 @@
 #
 import json
 import threading
-import os, sys
+import os, sys, re
 import importlib
 import halibot.packages
 from distutils.version import StrictVersion as Version
@@ -155,3 +155,41 @@ class Halibot():
 			o.init()
 		else:
 			self.log.warning("Failed to restart instance '{}'".format(name))
+
+	# Given a source RI, return a list of routed destinations
+	#
+	# Normally, active containers (with a name prrefixed with @ and an object defined
+	# under that name) are not resolved, but for the purposes of seeing where messages'
+	# final destinations are, then can be forced to resolve with resolve_all=True. This
+	# option should not be used for actually sending messages.
+	def route(self, source, resolve_all=False):
+		for d in self.config.get('routes', []):
+			dest = []
+			found = False
+
+			# Find all matching patterns of the same precedence level
+			for pat in d:
+				if re.match(pat, source):
+					# Found a match
+					found = True
+					raw = d[pat] if type(d[pat]) == list else [ d[pat] ]
+					for ri in raw:
+						name = ri.split('/')[0]
+						if ri.startswith('@') and (resolve_all or not name in self.objects):
+							# Resolve aliases
+							dest.extend(self.route(ri))
+						else:
+							dest.append(ri)
+			if found:
+				return dest
+
+		return []
+
+	# Add a route to the config
+	def add_route(self, src, dest):
+		if type(dest) != list: dest = [ dest ]
+
+		if len(self.config.get('routes', [])) > 0:
+			self.config['routes'][0][src] = self.config['routes'][0].get(src, []) + dest
+		else:
+			self.config['routes'] = [ { src: dest } ]
