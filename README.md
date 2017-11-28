@@ -1,4 +1,4 @@
-# Halibot [![Build Status](https://travis-ci.org/Halibot/halibot.svg)](https://travis-ci.org/Halibot/halibot) [![Coverage Status](https://coveralls.io/repos/github/Halibot/halibot/badge.svg?branch=master)](https://coveralls.io/github/Halibot/halibot?branch=master)
+# Halibot [![Build Status](https://travis-ci.org/Halibot/halibot.svg?branch=master)](https://travis-ci.org/Halibot/halibot) [![Coverage Status](https://coveralls.io/repos/github/Halibot/halibot/badge.svg?branch=master)](https://coveralls.io/github/Halibot/halibot?branch=master)
 The world's greatest saltwater multi-protocol chat bot framework!
 
 For the module and agent repositories, see [halibot-extra](https://github.com/halibot-extra).
