@@ -21,7 +21,7 @@ function uninstall {
 
 function install {
 	# Sed was being fussy on FreeBSD, used ed, the one true text editor
-	printf "1a\nSRCLOC=$SRCLOC\n.\n,p\n" | ed -s run-scripts/halibot > $BINLOC &&
+	printf "1a\nSRCLOC=$SRCLOC\n.\n,p\nQ\n" | ed -s run-scripts/halibot > $BINLOC &&
 	chmod +x $BINLOC &&
 
 	mkdir -p $SRCLOC &&
