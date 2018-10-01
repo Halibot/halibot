@@ -6,11 +6,23 @@ import logging
 import sys
 import os
 import shutil
-import tarfile
-import urllib.request
-import io
 import argparse
 import code
+
+DEFAULT_CONFIG = {
+	"package-path": [
+		"packages",
+		os.path.join(os.path.abspath(os.path.dirname(__file__)), "packages")
+	],
+	"repos": ["https://halibot.fish:4842"],
+	"agent-instances": {},
+	"module-instances": {},
+	"cli-instances": {
+		"pm": {
+			"of": "core:PackageManager"
+		}
+	}
+}
 
 def h_init(args):
 	confpath = os.path.join(args.path, "config.json")
@@ -30,18 +42,8 @@ def h_init(args):
 		if not r.lower() in ("y", "yes", "yolo"):
 			return
 
-	config = {
-		"package-path": [
-			"packages",
-			os.path.join(os.path.abspath(os.path.dirname(__file__)), "packages")
-		],
-		"repos": ["https://halibot.fish:4842"],
-		"agent-instances": {},
-		"module-instances": {}
-	}
-
 	with open(confpath, "w") as f:
-		f.write(json.dumps(config, sort_keys=True, indent=4))
+		f.write(json.dumps(DEFAULT_CONFIG, sort_keys=True, indent=4))
 
 	if not os.path.exists(permpath):
 		with open(permpath, "w") as f:
@@ -113,103 +115,6 @@ def h_run(args):
 		bot.shutdown()
 		print("Halibot bides you farewell.")
 
-def h_fetch(args):
-	# In order to access the config easily
-	bot = halibot.Halibot()
-	bot._load_config()
-
-	# Error checking
-	if not "repos" in bot.config:
-		print("There are no repos specified in the config.json.")
-		print("I have nothing to fetch from!")
-		return
-
-	# Try to fetch each requested package
-	for name in args.packages:
-		# Install to the first package path by default
-		dst = os.path.join(bot.config["package-path"][0], name)
-
-		success = False
-		for r in bot.config["repos"]:
-			src = r + "/fetch/" + name
-			try:
-				print("Trying to fetch package from '{}'...".format(r))
-				bio = io.BytesIO(urllib.request.urlopen(src).read())
-				tar = tarfile.open(mode="r:*", fileobj=bio)
-				os.mkdir(dst)
-				tar.extractall(dst)
-
-				print("\033[92mSuccessfully fetched '{}' into '{}'.\033[0m".format(name, dst))
-				success = True
-				break
-			except Exception as e:
-				print(e)
-
-		if not success:
-			print("\033[91mFailed to fetch '{}'!\033[0m".format(name))
-
-def h_search(args):
-	# In order to access the config easily
-	bot = halibot.Halibot()
-	bot._load_config()
-
-	# Error checking
-	if not "repos" in bot.config:
-		print("There are no repos specified in the config.json.")
-		print("I have nowhere to search!")
-		return
-
-	# Query all listed repositories
-	results = {}
-	for r in bot.config["repos"]:
-		url = r + "/search/"
-		if args.term != None:
-			url += args.term
-
-		data = urllib.request.urlopen(url).read().decode('utf-8')
-		subres = json.loads(data)
-		results = dict(list(subres.items()) + list(results.items()))
-
-	# Output results
-	sorted_keys = list(results.keys())
-	sorted_keys.sort()
-	for name in sorted_keys:
-		print(name, "-", results[name]['description'])
-
-
-def h_unfetch(args):
-	# In order to access the config easily
-	bot = halibot.Halibot()
-	bot._load_config()
-
-	# Remove each requested package
-	for name in args.packages:
-		# Install to the first package path by default
-		success = False
-		for pkgpath in bot.config["package-path"]:
-			path = os.path.join(pkgpath, name)
-			if os.path.exists(path):
-				shutil.rmtree(path)
-				print("Removed '{}' installed to '{}'.".format(name, path))
-				success = True
-
-		if not success:
-			print("Could not find package '{}'".format(name))
-
-
-def h_list_packages(args):
-	bot = halibot.Halibot()
-	bot._load_config()
-
-	pkgs = []
-	for path in bot.config.get("package-path"):
-		pkgs = pkgs + os.listdir(path)
-	pkgs.sort()
-
-	print("\nInstalled packages:")
-	for p in pkgs:
-		print("  {}".format(p))
-	print("")
 
 def h_add(args):
 	# In order to access the config easily
@@ -364,12 +269,8 @@ if __name__ == "__main__":
 	subcmds = {
 		"init": h_init,
 		"run": h_run,
-		"fetch": h_fetch,
-		"unfetch": h_unfetch,
 		"add": h_add,
 		"rm": h_rm,
-		"packages": h_list_packages,
-		"search": h_search,
 		"config": h_config,
 	}
 
@@ -386,12 +287,6 @@ if __name__ == "__main__":
 	run.add_argument("-f", "--log-file", help="file to output logs to, none by default")
 	run.add_argument("-l", "--log-level", help="level of logs, DEBUG by default")
 
-	fetch = sub.add_parser("fetch", help="fetch remote packages")
-	fetch.add_argument("packages", help="name of package to fetch", nargs="+", metavar="package")
-
-	unfetch = sub.add_parser("unfetch", help="as if you never fetched them at all")
-	unfetch.add_argument("packages", help="name of package to unfetch", nargs="+", metavar="package")
-
 	add = sub.add_parser("add", help="add agents or modules to the local halibot instance")
 	add.add_argument("things", help="path to class to add", nargs="+", metavar="class")
 	addtype = add.add_mutually_exclusive_group()
@@ -401,11 +296,6 @@ if __name__ == "__main__":
 	rm = sub.add_parser("rm", help="remove agents or modules from the local halibot instance")
 	rm.add_argument("names", help="names of agents or modules to remove", nargs="+", metavar="name")
 
-	list_packages = sub.add_parser("packages", help="list all installed packages")
-
-	search = sub.add_parser("search", help="search for packages")
-	search.add_argument("term", help="what to search for", nargs="?", metavar="term")
-
 	config_cmd = sub.add_parser("config", help="configure or reconfigure a module or agent")
 	config_cmd.add_argument("name", help="name of the module or agent to show or reconfigure")
 	config_cmd.add_argument("-s", "--show", action="store_true", help="show the configuration rather than set it", required=False)
@@ -413,10 +303,28 @@ if __name__ == "__main__":
 	config_cmd.add_argument("-v", "--value", help="value to set key to", required=False)
 	config_cmd.add_argument("-t", "--type", choices=["string", "number", "boolean"], help="the type used while setting a config value with -k. If not given, it uses the type of the existing value")
 
+	hal = halibot.Halibot(config=DEFAULT_CONFIG)
+	try:
+		hal._load_config("config.json")
+	except Exception as e:
+		pass
+
+	if "cli-instances" in hal.config.keys():
+		hal._instantiate_objects("cli")
+		for o in hal.objects.values():
+			o.cli(sub)
+
 	args = parser.parse_args()
 
 	# Try to run a subcommand
-	if args.cmd != None:
-		subcmds[args.cmd](args)
+	func = subcmds.get(args.cmd)
+	if func:
+		func(args)
 	else:
-		parser.print_help()
+		for i in hal.objects.values():
+			if i.cli_receive(args):
+				break
+		else:
+			parser.print_help()
+
+	hal.shutdown()
