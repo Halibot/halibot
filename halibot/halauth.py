@@ -1,12 +1,27 @@
 import json
 import logging
 import re
+from halibot.message import Message, MalformedMsgException
 
-def hasPermission(perm, reply=False):
+def hasPermission(perm, reply=False, argnum=None, key="msg"):
 	def real_dec(func):
-		def wrapper(self, msg, *args, **kwargs):
+		def wrapper(self, *args, **kwargs):
+			if argnum != None and argnum < len(args):
+				msg = args[argnum]
+			else:
+				msg = kwargs[key]
+
+			# Origin must be set for this to be a valid permission check
+			if not hasattr(msg, "origin") or not msg.origin:
+				self.log.error("Probable module bug! -- hasPermission decorator called on a function that doesn't have a valid Message argument!")
+				raise MalformedMsgException("Bad or missing origin attribute")
+			# Identity may not be supported by agent, so we'll allow this to be blank
+			if not hasattr(msg, "identity"):
+				self.log.error("Probable module bug! -- hasPermission decorator called on a function that doesn't have a valid Message argument!")
+				raise MalformedMsgException("Missing identity attribute")
+
 			if self._hal.auth.hasPermission(msg.origin, msg.identity, perm):
-				func(self, msg, *args, **kwargs)
+				func(self, *args, **kwargs)
 			elif reply:
 				self.reply(msg, body="Permission Denied")
 		return wrapper
