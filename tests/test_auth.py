@@ -30,38 +30,56 @@ class StubModuleDec(halibot.HalModule):
 	def receive(self, msg):
 		self.function(msg)
 
+# This is needed to test the catch-all in the Decorator
+#  if the module developer didn't include a Message object
+class StubModuleDecFail(halibot.HalModule):
+
+	def init(self):
+		self.called = False
+
+	@halibot.halauth.hasPermission("Foo", reply=True)
+	def function(self):
+		self.called = True
+
+	def receive(self, msg):
+		self.function()
+
 class TestAuth(util.HalibotTestCase):
 
 	def test_grantperm(self):
 		self.bot.auth.perms = []
 		self.bot.auth.enabled = False
-		self.bot.auth.grantPermission("foo", "bar", "baz")
+		self.assertFalse(self.bot.auth.grantPermission("foo", "bar", "baz"))
 
 		self.assertEqual(len(self.bot.auth.perms), 0)
 
 		self.bot.auth.enabled = True
 
-		self.bot.auth.grantPermission("foo", "bar", "baz")
+		self.assertTrue(self.bot.auth.grantPermission("foo", "bar", "baz"))
 		self.assertEqual(len(self.bot.auth.perms), 1)
 		self.assertEqual(self.bot.auth.perms[0][0], "foo")
 		self.assertEqual(self.bot.auth.perms[0][1], "bar")
 		self.assertEqual(self.bot.auth.perms[0][2], "baz")
 
+		# Ensure we do not grant the same permission multiple times
+		self.assertFalse(self.bot.auth.grantPermission("foo", "bar", "baz"))
+		self.assertEqual(len(self.bot.auth.perms), 1)
+
 	def test_revokeperm(self):
 		self.bot.auth.perms = [("foo", "bar", "baz")]
 		self.bot.auth.enabled = False
 
-		self.bot.auth.revokePermission("foo", "bar", "baz")
+		self.assertFalse(self.bot.auth.revokePermission("foo", "bar", "baz"))
 		# Permissions aren't enabled, so we should ignore revocations
 		self.assertEqual(len(self.bot.auth.perms), 1)
 
 		self.bot.auth.enabled = True
 
-		self.bot.auth.revokePermission("foo", "bar", "baz")
+		self.assertTrue(self.bot.auth.revokePermission("foo", "bar", "baz"))
 		self.assertEqual(len(self.bot.auth.perms), 0)
 
 		# This should remain empty, and fail to find the perm to revoke
-		self.bot.auth.revokePermission("foo", "bar", "baz")
+		self.assertFalse(self.bot.auth.revokePermission("foo", "bar", "baz"))
 		self.assertEqual(len(self.bot.auth.perms), 0)
 
 	def test_hasperm_func(self):
@@ -110,6 +128,28 @@ class TestAuth(util.HalibotTestCase):
 		self.bot.auth.grantPermission(ri, user, perm)
 		stub.receive(msg)
 		self.assertTrue(stub.called)
+
+		stub.called = False
+		self.bot.auth.revokePermission(ri, user, perm)
+		stub.receive(msg)
+		self.assertFalse(stub.called)
+
+	def test_hasperm_dec_fail(self):
+		self.bot.auth.enabled = True
+		stub = StubModuleDecFail(self.bot)
+		self.bot.add_instance('stub_mod', stub)
+
+		ri = "test/foobar"
+		user = "tester"
+		perm = "Foo"
+		msg = halibot.Message(body="", origin=ri, identity=user)
+
+		stub.receive(msg)
+		self.assertFalse(stub.called)
+
+		self.bot.auth.grantPermission(ri, user, perm)
+		stub.receive(msg)
+		self.assertFalse(stub.called)
 
 		stub.called = False
 		self.bot.auth.revokePermission(ri, user, perm)

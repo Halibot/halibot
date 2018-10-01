@@ -1,11 +1,21 @@
 import json
 import logging
+from halibot.message import Message
 
 def hasPermission(perm, reply=False):
 	def real_dec(func):
-		def wrapper(self, msg, *args, **kwargs):
+		def wrapper(self, *args, **kwargs):
+			msg = None
+			for i in list(args) + list(kwargs.values()):
+				if i.__class__ == Message:
+					msg = i
+					break
+			else:
+				self.log.error("Probable module bug! -- hasPermission decorator called on a function that doesn't have a Message argument!")
+				return
+
 			if self._hal.auth.hasPermission(msg.origin, msg.identity, perm):
-				func(self, msg, *args, **kwargs)
+				func(self, *args, **kwargs)
 			elif reply:
 				self.reply(msg, body="Permission Denied")
 		return wrapper
@@ -47,20 +57,24 @@ class HalAuth():
 
 	def grantPermission(self, ri, identity, perm):
 		if not self.enabled:
-			return
+			return False
 
 		t = (ri, identity, perm)
 		if t not in self.perms:
 			self.perms.append(t)
+			return True
+		return False
 
 	def revokePermission(self, ri, identity, perm):
 		if not self.enabled:
-			return
+			return False
 
 		try:
 			self.perms.remove((ri,identity, perm))
+			return True
 		except Exception as e:
 			self.log.error("Revocation failed: {}".format(e))
+			return False
 
 	def hasPermission(self, ri, identity, perm):
 		if not self.enabled:
