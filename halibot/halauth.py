@@ -47,20 +47,24 @@ class HalAuth():
 
 	def grantPermission(self, ri, identity, perm):
 		if not self.enabled:
-			return
+			return False
 
 		t = (ri, identity, perm)
 		if t not in self.perms:
 			self.perms.append(t)
+			return True
+		return False
 
 	def revokePermission(self, ri, identity, perm):
 		if not self.enabled:
-			return
+			return False
 
 		try:
 			self.perms.remove((ri,identity, perm))
+			return True
 		except Exception as e:
 			self.log.error("Revocation failed: {}".format(e))
+			return False
 
 	def hasPermission(self, ri, identity, perm):
 		if not self.enabled:
