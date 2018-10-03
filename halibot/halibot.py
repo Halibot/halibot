@@ -42,7 +42,6 @@ class Halibot():
 		self.log = logging.getLogger(self.__class__.__name__)
 
 		self.use_config = kwargs.get("use_config", True)
-		self.use_auth = kwargs.get("use_auth", True)
 		self.workdir = kwargs.get("workdir", ".")
 
 		self.auth = HalAuth()
@@ -56,7 +55,7 @@ class Halibot():
 			self._load_config()
 			self._instantiate_objects("agent")
 			self._instantiate_objects("module")
-			if self.use_auth:
+			if self.config.get("use-auth", False):
 				self.auth.load_perms(self.config.get("auth-path","permissions.json"))
 
 	def shutdown(self):

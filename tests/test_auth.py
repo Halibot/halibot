@@ -117,6 +117,14 @@ class TestAuth(util.HalibotTestCase):
 		self.assertFalse(stub.called)
 
 	def test_load_perms(self):
+		# A bad JSON string should give the user no permissions
+		with open("testperms.json", "w") as f:
+			f.write("[(\"foo\", \"bar\", \"baz\")]")
+
+		self.bot.auth.load_perms("testperms.json")
+		self.assertEqual(len(self.bot.auth.perms), 0)
+		self.assertTrue(self.bot.auth.enabled)
+
 		with open("testperms.json", "w") as f:
 			f.write("[]")
 
