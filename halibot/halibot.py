@@ -33,8 +33,6 @@ class Halibot():
 
 	VERSION = "0.2.0"
 
-	config = {}
-
 	running = False
 	log = None
 
@@ -44,6 +42,11 @@ class Halibot():
 		self.use_config = kwargs.get("use_config", True)
 		self.use_auth = kwargs.get("use_auth", True)
 		self.workdir = kwargs.get("workdir", ".")
+		self.config = kwargs.get("config", {})
+		if self.config:
+			halibot.packages.__path__ = self.config.get("package-path", [])
+
+		self.configfile = kwargs.get("configfile", "config.json")
 
 		self.auth = HalAuth()
 		self.objects = ObjectDict()
@@ -53,7 +56,8 @@ class Halibot():
 		self.running = True
 
 		if self.use_config:
-			self._load_config()
+			if not self.config:
+				self._load_config(configfile=self.configfile)
 			self._instantiate_objects("agent")
 			self._instantiate_objects("module")
 			if self.use_auth:
@@ -89,13 +93,13 @@ class Halibot():
 		inst.init()
 		self.log.info("Instantiated object '" + name + "'")
 
-	def _load_config(self):
-		with open(os.path.join(self.workdir, "config.json"), "r") as f:
+	def _load_config(self, configfile="config.json"):
+		with open(os.path.join(self.workdir, configfile), "r") as f:
 			self.config = json.loads(f.read())
 			halibot.packages.__path__ = self.config.get("package-path", [])
 
-	def _write_config(self):
-		with open(os.path.join(self.workdir, "config.json"), "w") as f:
+	def _write_config(self, configfile="config.json"):
+		with open(os.path.join(self.workdir, configfile), "w") as f:
 			f.write(json.dumps(self.config, sort_keys=True, indent=4))
 
 
