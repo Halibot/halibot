@@ -31,6 +31,7 @@ class HalAuth():
 
 		except Exception as e:
 			self.log.error("Error loading permissions: {}".format(e))
+			self.perms = []
 			# Return if can't find auth?
 
 		self.enabled = True
