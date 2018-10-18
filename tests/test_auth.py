@@ -116,6 +116,20 @@ class TestAuth(util.HalibotTestCase):
 		stub.receive(msg)
 		self.assertFalse(stub.called)
 
+	def test_hasperm_regex(self):
+		self.bot.auth.enabled = True
+		stub = StubModuleDec(self.bot)
+		self.bot.add_instance('stub_mod', stub)
+
+		ri = "test/foobar"
+		user = "tester"
+		perm = "Foo"
+		msg = halibot.Message(body="", origin=ri, identity=user)
+
+		self.bot.auth.grantPermission(".*", user, ".*")
+		stub.receive(msg)
+		self.assertTrue(stub.called)
+
 	def test_load_perms(self):
 		# A bad JSON string should give the user no permissions
 		with open("testperms.json", "w") as f:
