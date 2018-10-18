@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 def hasPermission(perm, reply=False):
 	def real_dec(func):
@@ -68,7 +69,7 @@ class HalAuth():
 
 		def tester(x):
 			a,b,c = x
-			return a in (ri, "*") and b in (identity, "*") and c in (perm, "*")
+			return re.match(a, ri) and b in (identity, "*") and re.match(c, perm)
 
 		# Return True on the first successful perm match
 		for l in self.perms:
