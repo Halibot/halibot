@@ -6,9 +6,11 @@ import json
 import threading
 import os, sys
 import importlib
+import collections
 import halibot.packages
 from distutils.version import StrictVersion as Version
 from queue import Queue,Empty
+from string import Template
 from .halmodule import HalModule
 from .halagent import HalAgent
 from .halauth import HalAuth
@@ -17,6 +19,8 @@ from .halauth import HalAuth
 if "." not in sys.path:
 	sys.path.append(".")
 import logging
+
+HALDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 class ObjectDict(dict):
 
@@ -28,12 +32,50 @@ class ObjectDict(dict):
 	def agents(self):
 		return dict(filter(lambda x: isinstance(x[1], HalAgent), self.items()))
 
+#
+# This class represents the hierarchy of config files
+#
+class Config(collections.MutableMapping):
+
+	def __init__(self):
+		self.local = {}
+		self.system = {}
+
+	def _refresh_packages(self):
+		lpath = self.local.get("package-path", [])
+		spath = self.system.get("package-path", [])
+		halibot.packages.__path__ = lpath + spath
+
+	def set_local(self, local):
+		self.local = local
+		self._refresh_packages()
+
+	def set_system(self, system):
+		self.system = system
+		self._refresh_packages()
+
+	def __getitem__(self, key):
+		if key in self.local: return self.local[key]
+		return self.system[key]
+
+	def __setitem__(self, key, value):
+		self.local[key] = value
+
+	def __delitem__(self, key):
+		del self.local[value]
+
+	def __iter__(self):
+		return iter(self.local.keys() + self.system.keys())
+
+	def __len__(self):
+		return len(set(self.local.keys()) + set(self.system.keys()))
+
+	def __keytransform__(self, key):
+		return key
 
 class Halibot():
 
 	VERSION = "0.2.0"
-
-	config = {}
 
 	running = False
 	log = None
@@ -47,6 +89,7 @@ class Halibot():
 
 		self.auth = HalAuth()
 		self.objects = ObjectDict()
+		self.config = Config()
 
 	# Start the Hal instance
 	def start(self, block=True):
@@ -90,13 +133,25 @@ class Halibot():
 		self.log.info("Instantiated object '" + name + "'")
 
 	def _load_config(self):
+		# Special values expanded inside of configs
+		specials = {
+			'HALDIR': HALDIR
+		}
+
 		with open(os.path.join(self.workdir, "config.json"), "r") as f:
-			self.config = json.loads(f.read())
-			halibot.packages.__path__ = self.config.get("package-path", [])
+			text = Template(f.read()).safe_substitute(**specials)
+			self.config.set_local(json.loads(text))
+
+		try:
+			with open(os.path.join(HALDIR, "config", "system.json")) as f:
+				text = Template(f.read()).safe_substitute(**specials)
+				self.config.set_system(json.loads(text))
+		except FileNotFoundError as _:
+			self.log.info("No sytem config loaded.")
 
 	def _write_config(self):
 		with open(os.path.join(self.workdir, "config.json"), "w") as f:
-			f.write(json.dumps(self.config, sort_keys=True, indent=4))
+			f.write(json.dumps(self.config.local, sort_keys=True, indent=4))
 
 
 	def _get_class_from_package(self, pkgname, clsname):
