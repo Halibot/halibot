@@ -147,7 +147,7 @@ class Halibot():
 				text = Template(f.read()).safe_substitute(**specials)
 				self.config.set_system(json.loads(text))
 		except FileNotFoundError as _:
-			self.log.info("No sytem config loaded.")
+			self.log.info("No system config loaded.")
 
 	def _write_config(self):
 		with open(os.path.join(self.workdir, "config.json"), "w") as f:
