@@ -237,7 +237,7 @@ def h_list_packages(args):
 		pkgs = pkgs + os.listdir(path)
 	pkgs.sort()
 
-	print("\nInstalled packages:")
+	print("\nAvailable packages:")
 	for p in pkgs:
 		print("  {}".format(p))
 	print("")
@@ -434,7 +434,7 @@ if __name__ == "__main__":
 	rm = sub.add_parser("rm", help="remove agents or modules from the local halibot instance")
 	rm.add_argument("names", help="names of agents or modules to remove", nargs="+", metavar="name")
 
-	list_packages = sub.add_parser("packages", help="list all installed packages")
+	list_packages = sub.add_parser("packages", help="list all available packages")
 
 	search = sub.add_parser("search", help="search for packages")
 	search.add_argument("term", help="what to search for", nargs="?", metavar="term")
