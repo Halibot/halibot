@@ -375,6 +375,7 @@ if __name__ == "__main__":
 
 	# Setup argument parsing
 	parser = argparse.ArgumentParser(description="The world's greatest saltwater chat bot!")
+	parser.add_argument("-d", "--directory", help="Use the specified directory rather than the current.")
 
 	sub = parser.add_subparsers(title="commands", dest="cmd", metavar="COMMAND")
 
@@ -414,6 +415,9 @@ if __name__ == "__main__":
 	config_cmd.add_argument("-t", "--type", choices=["string", "number", "boolean"], help="the type used while setting a config value with -k. If not given, it uses the type of the existing value")
 
 	args = parser.parse_args()
+
+	if args.directory:
+		os.chdir(args.directory)
 
 	# Try to run a subcommand
 	if args.cmd != None:
