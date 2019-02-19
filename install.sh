@@ -28,7 +28,7 @@ function install {
 	cp $VERBOSE main.py $SRCLOC &&
 	cp -r $VERBOSE halibot $SRCLOC/halibot &&
 	cp -r $VERBOSE packages $SRCLOC/packages &&
-	cp -r $VERBOSE config $SRCLOC/config &&
+	cp -r $VERBOSE config $SRCLOC/config
 }
 
 # Handle arguments
