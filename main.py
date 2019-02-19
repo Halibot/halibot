@@ -196,6 +196,37 @@ def h_unfetch(args):
 		if not success:
 			print("Could not find package '{}'".format(name))
 
+def h_info(args):
+	bot = halibot.Halibot()
+	bot._load_config()
+
+	if args.object_name:
+		# Show configuration of specific object
+
+		conf = bot.config["agent-instances"].get(args.object_name)
+		conf = bot.config["module-instances"].get(args.object_name) if not conf else conf
+		if not conf:
+			print("No such agent or module")
+			return
+
+		print(f"\n{args.object_name}: ({conf['of']})")
+		for k in conf:
+			if k != "of":
+				print(f"  {k}: {conf[k]}")
+	else:
+		# Show all configured objects
+		print("\nConfigured agents:")
+		agents = bot.config.get("agent-instances")
+		for name in agents:
+			print(f"  {name} ({agents[name]['of']})")
+
+		print("\nConfigured modules:")
+		modules = bot.config.get("module-instances")
+		for name in modules:
+			print(f"  {name} ({modules[name]['of']})")
+
+	print("")
+
 
 def h_list_packages(args):
 	bot = halibot.Halibot()
@@ -371,6 +402,7 @@ if __name__ == "__main__":
 		"packages": h_list_packages,
 		"search": h_search,
 		"config": h_config,
+		"info": h_info,
 	}
 
 	# Setup argument parsing
@@ -412,6 +444,9 @@ if __name__ == "__main__":
 	config_cmd.add_argument("-k", "--key", help="key to set or key to display with -s", required=False)
 	config_cmd.add_argument("-v", "--value", help="value to set key to", required=False)
 	config_cmd.add_argument("-t", "--type", choices=["string", "number", "boolean"], help="the type used while setting a config value with -k. If not given, it uses the type of the existing value")
+
+	info = sub.add_parser("info", help="show configuration information")
+	info.add_argument("object_name", nargs="?", help="name of module or adent to query about")
 
 	args = parser.parse_args()
 
