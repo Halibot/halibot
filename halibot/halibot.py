@@ -41,6 +41,27 @@ class Config(collections.MutableMapping):
 		self.local = {}
 		self.system = {}
 
+	def _load_config(self, workdir="."):
+		# Special values expanded inside of configs
+		specials = {
+			'HALDIR': HALDIR
+		}
+
+		with open(os.path.join(workdir, "config.json"), "r") as f:
+			text = Template(f.read()).safe_substitute(**specials)
+			self.set_local(json.loads(text))
+
+		try:
+			with open(os.path.join(HALDIR, "config", "system.json")) as f:
+				text = Template(f.read()).safe_substitute(**specials)
+				self.set_system(json.loads(text))
+		except FileNotFoundError as _:
+			self.log.info("No system config loaded.")
+
+	def _write_config(self, workdir="."):
+		with open(os.path.join(workdir, "config.json"), "w") as f:
+			f.write(json.dumps(self.local, sort_keys=True, indent=4))
+
 	def _refresh_packages(self):
 		lpath = self.local.get("package-path", [])
 		spath = self.system.get("package-path", [])
@@ -95,7 +116,7 @@ class Halibot():
 		self.running = True
 
 		if self.use_config:
-			self._load_config()
+			self.config._load_config()
 			self._instantiate_objects("agent")
 			self._instantiate_objects("module")
 			if self.config.get("use-auth", False):
@@ -132,26 +153,10 @@ class Halibot():
 		self.log.info("Instantiated object '" + name + "'")
 
 	def _load_config(self):
-		# Special values expanded inside of configs
-		specials = {
-			'HALDIR': HALDIR
-		}
-
-		with open(os.path.join(self.workdir, "config.json"), "r") as f:
-			text = Template(f.read()).safe_substitute(**specials)
-			self.config.set_local(json.loads(text))
-
-		try:
-			with open(os.path.join(HALDIR, "config", "system.json")) as f:
-				text = Template(f.read()).safe_substitute(**specials)
-				self.config.set_system(json.loads(text))
-		except FileNotFoundError as _:
-			self.log.info("No system config loaded.")
+		self.config._load_config(workdir=self.workdir)
 
 	def _write_config(self):
-		with open(os.path.join(self.workdir, "config.json"), "w") as f:
-			f.write(json.dumps(self.config.local, sort_keys=True, indent=4))
-
+		self.config._write_config(workdir=self.workdir)
 
 	def _get_class_from_package(self, pkgname, clsname):
 		pkg = self.get_package(pkgname)
