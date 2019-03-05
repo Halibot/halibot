@@ -23,7 +23,7 @@ class StubModuleDec(halibot.HalModule):
 	def init(self):
 		self.called = False
 
-	@halibot.halauth.hasPermission("Foo", reply=True)
+	@halibot.halauth.hasPermission("Foo", reply=True, argnum=0)
 	def function(self, msg):
 		self.called = True
 
