@@ -43,6 +43,21 @@ class HalObject():
 	def shutdown(self):
 		pass
 
+	def apply_filter(self, dest):
+		fl = self._hal.config.get("filters")
+		if not fl:
+			return dest # Filters not enabled/configured
+
+		name = dest.split("/")[0]
+
+		ib = fl.get("inbound", {})
+		ob = fl.get("outbound", {})
+
+		ret = "/".join(ib.get(name, []) + [dest])
+		ret = "/".join(ob.get(self.name, []) + [ret])
+
+		return ret
+
 	def raw_send(self, msg):
 		if not msg.target:
 			self.log.warning("Message passed to send without target")
@@ -67,7 +82,7 @@ class HalObject():
 
 		ret = {}
 		for ri in dests:
-			msg.target = ri
+			msg.target = self.apply_filter(ri)
 			ret[ri] = self.raw_send(msg)
 
 		return ret

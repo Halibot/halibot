@@ -119,6 +119,7 @@ class Halibot():
 			self.config._load_config()
 			self._instantiate_objects("agent")
 			self._instantiate_objects("module")
+			self._instantiate_objects("filter")
 			if self.config.get("use-auth", False):
 				self.auth.load_perms(self.config.get("auth-path","permissions.json"))
 
