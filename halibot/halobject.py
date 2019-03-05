@@ -5,6 +5,7 @@ import copy
 from threading import Thread
 from collections import defaultdict
 from .halconfigurer import HalConfigurer
+from .message import MalformedMsgException
 
 class SyncSendSelfException(Exception): 'Cannot sync_send_to oneself.'
 
@@ -42,6 +43,23 @@ class HalObject():
 	def shutdown(self):
 		pass
 
+	def raw_send(self, msg):
+		if not msg.target:
+			self.log.warning("Message passed to send without target")
+			raise MalformedMsgException("raw_send given empty target")
+		if not msg.origin:
+			self.log.warning("Message passed to send without origin")
+			raise MalformedMsgException("raw_send given empty origin")
+
+		name = msg.target.split("/")[0]
+		to = self._hal.objects.get(name)
+		if to:
+			nmsg = copy.copy(msg)
+			return to._queue_msg(nmsg)
+		else:
+			self.log.warning("Unknown module/agent: " + name)
+
+
 	def send_to(self, msg, dests):
 		# Set origin for those who have not set it manually
 		if msg.origin == None:
@@ -49,14 +67,9 @@ class HalObject():
 
 		ret = {}
 		for ri in dests:
-			name = ri.split('/')[0]
-			to = self._hal.objects.get(name)
-			if to:
-				nmsg = copy.copy(msg)
-				nmsg.target = ri
-				ret[ri] = to._queue_msg(nmsg)
-			else:
-				self.log.warning('Unknown module/agent: ' + str(name))
+			msg.target = ri
+			ret[ri] = self.raw_send(msg)
+
 		return ret
 
 	def sync_send_to(self, msg, dests):
