@@ -2,15 +2,15 @@ import json
 import logging
 from halibot.message import Message
 
-def hasPermission(perm, reply=False):
+def hasPermission(perm, reply=False, argnum=-1, key="msg"):
 	def real_dec(func):
 		def wrapper(self, *args, **kwargs):
-			msg = None
-			for i in list(args) + list(kwargs.values()):
-				if i.__class__ == Message:
-					msg = i
-					break
+			if argnum >= 0 and argnum < len(args):
+				msg = args[argnum]
 			else:
+				msg = kwargs.get(key)
+
+			if not msg:
 				self.log.error("Probable module bug! -- hasPermission decorator called on a function that doesn't have a Message argument!")
 				return
 
