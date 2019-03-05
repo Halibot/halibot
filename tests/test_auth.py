@@ -144,16 +144,28 @@ class TestAuth(util.HalibotTestCase):
 		perm = "Foo"
 		msg = halibot.Message(body="", origin=ri, identity=user)
 
-		stub.receive(msg)
+		try:
+			stub.receive(msg)
+			self.assertTrue(False) # Above line should have raised
+		except halibot.message.MalformedMsgException:
+			pass
 		self.assertFalse(stub.called)
 
 		self.bot.auth.grantPermission(ri, user, perm)
-		stub.receive(msg)
+		try:
+			stub.receive(msg)
+			self.assertTrue(False) # Above line should have raised
+		except halibot.message.MalformedMsgException:
+			pass
 		self.assertFalse(stub.called)
 
 		stub.called = False
 		self.bot.auth.revokePermission(ri, user, perm)
-		stub.receive(msg)
+		try:
+			stub.receive(msg)
+			self.assertTrue(False) # Above line should have raised
+		except halibot.message.MalformedMsgException:
+			pass
 		self.assertFalse(stub.called)
 
 	def test_load_perms(self):
