@@ -2,6 +2,8 @@ import logging
 import uuid
 from .jsdict import jsdict
 
+class MalformedMsgException(Exception): 'Bad message object'
+
 class Message():
 
 	def __init__(self, **kwargs):
