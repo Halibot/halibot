@@ -23,12 +23,38 @@ class StubModuleDec(halibot.HalModule):
 	def init(self):
 		self.called = False
 
-	@halibot.halauth.hasPermission("Foo", reply=True)
+	@halibot.halauth.hasPermission("Foo", reply=True, argnum=0)
 	def function(self, msg):
 		self.called = True
 
 	def receive(self, msg):
 		self.function(msg)
+
+class StubModuleDecFail(halibot.HalModule):
+
+	def init(self):
+		self.called = False
+		self.tmp = None # fill in during tests
+
+	@halibot.halauth.hasPermission("Foo", reply=True, key="foo")
+	def no_msg_key(self, msg):
+		self.called = True
+
+	@halibot.halauth.hasPermission("Foo", reply=True, key="msg")
+	def not_msg_helper(self, msg=None):
+		self.called = True
+
+	def not_msg_entry(self, msg):
+		class t:
+			origin = "test"
+		self.not_msg_helper(msg=t())
+
+	@halibot.halauth.hasPermission("Foo", reply=True, argnum=0)
+	def valid(self, msg):
+		self.called = True
+
+	def receive(self, msg):
+		self.temp(msg)
 
 class TestAuth(util.HalibotTestCase):
 
@@ -115,6 +141,65 @@ class TestAuth(util.HalibotTestCase):
 		self.bot.auth.revokePermission(ri, user, perm)
 		stub.receive(msg)
 		self.assertFalse(stub.called)
+
+	def test_hasperm_dec_fail(self):
+		self.bot.auth.enabled = True
+		stub = StubModuleDecFail(self.bot)
+		self.bot.add_instance('stub_mod', stub)
+
+		ri = "test/foobar"
+		user = "tester"
+		perm = "Foo"
+		msg_bad = halibot.Message(body="", origin="", identity=user)
+		msg_good = halibot.Message(body="", origin=ri, identity=user)
+
+		# Empty origin
+		stub.temp = stub.valid
+		try:
+			stub.receive(msg_bad)
+			self.assertTrue(False) # We should catch an Exception here
+		except halibot.message.MalformedMsgException:
+			pass
+		self.assertFalse(stub.called)
+
+		self.bot.auth.grantPermission(ri, user, perm)
+		try:
+			stub.receive(msg_bad)
+			self.assertTrue(False) # We should catch an Exception here
+		except halibot.message.MalformedMsgException:
+			pass
+		self.assertFalse(stub.called)
+
+		stub.called = False
+		self.bot.auth.revokePermission(ri, user, perm)
+		try:
+			stub.receive(msg_bad)
+			self.assertTrue(False) # We should catch an Exception here
+		except halibot.message.MalformedMsgException:
+			pass
+		self.assertFalse(stub.called)
+
+
+		# Not actually a message object, missing identity
+		stub.temp = stub.not_msg_entry
+		stub.called = False
+		try:
+			stub.receive(msg_good)
+			self.assertTrue(False) # We should catch an Exception here
+		except halibot.message.MalformedMsgException:
+			pass
+		self.assertFalse(stub.called)
+
+		# Bad arg key
+		stub.temp = stub.no_msg_key
+		stub.called = False
+		try:
+			stub.receive(msg_good)
+			self.assertTrue(False) # We should catch an Exception here
+		except KeyError:
+			pass
+		self.assertFalse(stub.called)
+
 
 	def test_hasperm_regex(self):
 		self.bot.auth.enabled = True
