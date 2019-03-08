@@ -209,23 +209,23 @@ def h_info(args):
 			print("No such agent or module")
 			return
 
-		print(f"\n{args.object_name}: ({conf['of']})")
+		print("\n{args.object_name}: ({conf['of']})".format(args=args, conf=conf))
 		for k in conf:
 			if k != "of":
-				print(f"  {k}: {conf[k]}")
+				print("  {k}: {conf[k]}".format(k=k, conf=conf))
 	else:
 		# Show all configured objects
 		if len(bot.config.get("agent-instances", {})) > 0:
 			print("\nConfigured agents:")
-			agents = bot.config["agent-instances"]
+			agents = bot.config.get("agent-instances")
 			for name in agents:
-				print(f"  {name} ({agents[name]['of']})")
+				print("  {name} ({agents[name]['of']})".format(name=name, agents=agents))
 
 		if len(bot.config.get("module-instances", {})) > 0:
 			print("\nConfigured modules:")
 			modules = bot.config.get("module-instances")
 			for name in modules:
-				print(f"  {name} ({modules[name]['of']})")
+				print("  {name} ({modules[name]['of']})".format(name=name, modules=modules))
 
 	print("")
 
