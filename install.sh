@@ -20,6 +20,11 @@ function uninstall {
 }
 
 function install {
+	# Missing ed on first attempt puts things into a problematic state so let's prevent that.
+	if ! command -v ed 2>&1 >/dev/null; then
+		echo "Error: ed is not installed."
+		exit 1
+	fi
 	# Sed was being fussy on FreeBSD, used ed, the one true text editor
 	printf "1a\nSRCLOC=$SRCLOC\n.\n,p\nQ\n" | ed -s run-scripts/halibot > $BINLOC &&
 	chmod +x $BINLOC &&
