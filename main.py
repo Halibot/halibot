@@ -37,6 +37,7 @@ def h_init(args):
 		"repos": ["https://halibot.fish:4842"],
 		"agent-instances": {},
 		"module-instances": {},
+		"filter-instances": {},
 		"use-auth": False
 	}
 
