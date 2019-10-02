@@ -186,7 +186,7 @@ class Halibot():
 			return None
 
 	def _instantiate_objects(self, key):
-		inst = self.config[key + "-instances"]
+		inst = self.config.get(key + "-instances", {})
 
 		for k in inst.keys():
 			conf = inst[k]
