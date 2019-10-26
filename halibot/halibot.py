@@ -150,6 +150,7 @@ class Halibot():
 	def add_instance(self, name, inst):
 		self.objects[name] = inst
 		inst.name = name
+		inst.log.name += "({})".format(name)
 		inst.init()
 		self.log.info("Instantiated object '" + name + "'")
 
