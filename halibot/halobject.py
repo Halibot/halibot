@@ -14,7 +14,7 @@ class HalObject():
 	def __init__(self, hal, conf={}):
 		self._hal = hal
 		self.config = conf
-		self.log = logging.getLogger(self.__class__.__name__) # TODO: Put instantiated name in here too
+		self.log = logging.getLogger(self.__class__.__name__)
 
 		# Only used in HalModule.reply right now, but accessed on potentially any
 		# HalObject, so it exists on every HalObject to avoid attribute errors
