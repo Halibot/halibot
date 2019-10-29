@@ -12,6 +12,7 @@ from queue import Queue,Empty
 from .halmodule import HalModule
 from .halagent import HalAgent
 from .halauth import HalAuth
+from .halconfigurer import HalConfigurer
 
 # Avoid appending "." if it i
 if "." not in sys.path:
@@ -120,7 +121,11 @@ class Halibot():
 			if len(split) == 2:
 				obj = self._get_class_from_package(*split)
 				if obj and self._check_version(obj):
-						return obj(self, conf=conf)
+					# Check config and any missing values
+					cfgr = obj.Configurer()
+					conf = cfgr.validate_config(conf)
+					conf['of'] = pkg
+					return obj(self, conf=conf)
 			else:
 				self.log.error("Invalid class identifier {}, must contain only 1 ':'".format(conf["of"]))
 			return None
@@ -131,6 +136,10 @@ class Halibot():
 		for k in inst.keys():
 			conf = inst[k]
 			obj = self.load_object(conf["of"], conf=conf)
+
+			if obj.config != conf:
+				self.config[key + "-instances"][k] = obj.config
+				self.config._write_config()
 
 			if obj:
 				self.add_instance(k, obj)
