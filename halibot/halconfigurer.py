@@ -89,20 +89,25 @@ class HalConfigurer():
 		for key, validator in self.options.items():
 			tmp = config.get(key)
 
+			# Unsure on whether the item this one depends on NOT being present in config is warranted to make this required
+			required = not validator.depends or validator.depends not in config or config.get(validator.depends)
+
 			# Ensure the key exists, and if we aren't taking defaults, ensure we report
-			if not tmp and not fill_default:
+			if not tmp and not required:
+				break
+			elif not tmp and not fill_default:
 				missing.append(key)
-				continue
 			elif not tmp:
 				ret[key] = validator.default
-				continue
-
-			# Propogate ValueError if there is one
-			ret[key] = validator.validate(tmp)
+			else:
+				# Propogate ValueError if there is one
+				ret[key] = validator.validate(tmp)
 
 		if missing and not fill_default:
 			str = "Missing key" + ("s" if len(missing) > 1 else "") + ": " + ", ".join(missing)
 			raise KeyError(str)
+
+		return ret
 
 	# Validate an individual key/value pair. Probably used for runtime changes/configurerers.
 	def validate_key(self, key, value):
