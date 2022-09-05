@@ -37,7 +37,8 @@ class TestInit(CliTestCase):
 			self.assertTrue('module-instances' in conf)
 			self.assertTrue('package-path' in conf)
 			self.assertTrue(len(conf['package-path']) > 0)
-
+"""
+# Disabled for now, since halibot.fish is RIP
 class TestFetch(CliTestCase):
 
 	def test_fetch(self):
@@ -49,7 +50,7 @@ class TestFetch(CliTestCase):
 		self.assertTrue(os.path.exists(ircPath))
 		self.cmd(['unfetch', 'irc'])
 		self.assertFalse(os.path.exists(ircPath))
-
+"""
 class TestInstall(CliTestCase):
 
 	def test_install(self):
