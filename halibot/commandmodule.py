@@ -3,6 +3,13 @@
 #    Subclass of HalModule that does the heavy lifting of commands for you
 #
 from . import HalModule
+from enum import Enum, auto
+
+class Reason(Enum):
+	NO_PREFIX = auto()
+	BAD_NAMESPACE = auto()
+	NAMESPACE_ONLY = auto()
+	UNKNOWN_COMMAND = auto()
 
 # Decorator for converting the string stripped of the command to an argument list
 def AsArgs(func):
@@ -35,20 +42,19 @@ class CommandModule(HalModule):
 
 	# Actually does the command handling logic. Separate callable so multi-inheritance
 	#  can work nicely (maybe)
-	def _cmd_receive(self, msg):
+	def _cmd_parse(self, msg):
 		body = msg.body.split(" ", 1)
 		if body and not body[0].startswith(self.prefix):
-			self.default(msg)
-			return
+			return Reason.NO_PREFIX
 		body[0] = body[0][1:]
 
 		if self.namespace:
 			name = body.pop(0)
 
 			if name != self.namespace:
-				return
+				return Reason.BAD_NAMESPACE
 			if len(body) == 0:
-				return
+				return Reason.NAMESPACE_ONLY
 
 		# Ugly fix for commands without args
 		if len(body) == 1:
@@ -60,8 +66,14 @@ class CommandModule(HalModule):
 		if func:
 			func(body[1], msg=msg)
 		else:
-			self.default(msg)
+			return Reason.UNKNOWN_COMMAND
+
+	def _cmd_receive(self, msg):
+		reason = self._cmd_parse(msg)
+		if reason:
+			self.default(msg, reason=reason)
+
 
 	# Override this to provide some functionality if there is no match in the table
-	def default(self, msg):
+	def default(self, msg, reason=None):
 		pass
