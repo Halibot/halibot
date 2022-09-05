@@ -1,3 +1,9 @@
+## Halibot specific
+# Local development files
+packages/
+config.json
+permissions.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
