@@ -35,7 +35,7 @@ class ObjectDict(dict):
 #
 # This class represents the hierarchy of config files
 #
-class Config(collections.MutableMapping):
+class Config(collections.abc.MutableMapping):
 
 	def __init__(self):
 		self.local = {}
