@@ -3,7 +3,7 @@ import logging
 import re
 from halibot.message import Message, MalformedMsgException
 
-def hasPermission(perm, reply=False, argnum=None, key="msg"):
+def hasPermission(perm, reply=False, argnum=None, key="msg", permissive=True):
 	def real_dec(func):
 		def wrapper(self, *args, **kwargs):
 			if argnum != None and argnum < len(args):
@@ -20,7 +20,7 @@ def hasPermission(perm, reply=False, argnum=None, key="msg"):
 				self.log.error("Probable module bug! -- hasPermission decorator called on a function that doesn't have a valid Message argument!")
 				raise MalformedMsgException("Missing identity attribute")
 
-			if self._hal.auth.hasPermission(msg.origin, msg.identity, perm):
+			if self._hal.auth.hasPermission(msg.origin, msg.identity, perm, permissive):
 				func(self, *args, **kwargs)
 			elif reply:
 				self.reply(msg, body="Permission Denied")
@@ -79,9 +79,9 @@ class HalAuth():
 		except Exception as e:
 			self.log.error("Revocation failed: {}".format(e))
 
-	def hasPermission(self, ri, identity, perm):
+	def hasPermission(self, ri, identity, perm, permissive=True):
 		if not self.enabled:
-			return True
+			return permissive
 
 		def tester(x):
 			a,b,c = x

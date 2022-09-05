@@ -16,11 +16,11 @@ class Admin(CommandModule):
 			"reload": self.cmd_reload,
 		}
 
-	@hasPermission("ADMIN", reply=True)
+	@hasPermission("ADMIN", reply=True, permissive=False)
 	def cmd_shutdown(self, args, msg=None):
 		self._hal.shutdown()
 
-	@hasPermission("ADMIN", reply=True)
+	@hasPermission("ADMIN", reply=True, permissive=False)
 	def cmd_reload(self, args, msg=None):
 		try:
 			self._hal.reload(args)
