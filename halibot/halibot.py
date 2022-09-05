@@ -129,19 +129,25 @@ class Halibot():
 
 		if block:
 			self.eventloop.run_forever()
+			self.eventloop.close()
 		else:
-			self._thread = threading.Thread(target=self.eventloop.run_forever)
+			self._thread = threading.Thread(target=self._block_forever)
 			self._thread.start()
 
+	def _block_forever(self):
+		self.eventloop.run_forever()
+		self.eventloop.close()
 
 	def shutdown(self):
 		self.log.info("Shutting down halibot...")
-
 		for o in self.objects.values():
 			o._shutdown()
 
 		self.eventloop.call_soon_threadsafe(self.eventloop.stop)
 		self.log.info("Halibot shutdown. Threads left: " + str(threading.active_count()))
+		if self._thread:
+			self._thread.join()
+
 		self.running = False
 
 	def _check_version(self, obj):

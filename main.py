@@ -113,7 +113,6 @@ def h_run(args):
 		}
 		code.interact(banner="Halibot welcomes you!", local=local)
 		bot.shutdown()
-		bot._thread.join()
 		print("Halibot bides you farewell.")
 
 def h_fetch(args):
