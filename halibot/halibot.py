@@ -4,6 +4,7 @@
 #
 import json
 import threading
+import asyncio
 import os, sys
 import importlib
 import collections
@@ -111,6 +112,9 @@ class Halibot():
 		self.objects = ObjectDict()
 		self.config = Config()
 
+		self.eventloop = asyncio.SelectorEventLoop()
+		self._thread = None
+
 	# Start the Hal instance
 	def start(self, block=True):
 		self.running = True
@@ -123,13 +127,22 @@ class Halibot():
 			if self.config.get("use-auth", False):
 				self.auth.load_perms(self.config.get("auth-path","permissions.json"))
 
+		if block:
+			self.eventloop.run_forever()
+		else:
+			self._thread = threading.Thread(target=self.eventloop.run_forever)
+			self._thread.start()
+
+
 	def shutdown(self):
-		self.log.info("Shutting down halibot...");
+		self.log.info("Shutting down halibot...")
 
 		for o in self.objects.values():
 			o._shutdown()
 
+		self.eventloop.call_soon_threadsafe(self.eventloop.stop)
 		self.log.info("Halibot shutdown. Threads left: " + str(threading.active_count()))
+		self.running = False
 
 	def _check_version(self, obj):
 		v = Version(self.VERSION)

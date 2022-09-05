@@ -20,17 +20,13 @@ class HalObject():
 		# HalObject, so it exists on every HalObject to avoid attribute errors
 		self.sync_replies = defaultdict(lambda: []) # UUID -> [Message, ...]
 
-		self.eventloop = asyncio.SelectorEventLoop()
-		self._thread = Thread(target=self._run_eventloop)
-		self._thread.start()
+		self.eventloop = hal.eventloop
 
 	def _run_eventloop(self):
 		self.eventloop.run_forever()
 		self.eventloop.close()
 
 	def _shutdown(self):
-		self.eventloop.call_soon_threadsafe(self.eventloop.stop)
-		self._thread.join()
 		self.shutdown()
 
 	def _queue_msg(self, msg):

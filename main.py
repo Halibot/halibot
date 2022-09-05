@@ -103,7 +103,8 @@ def h_run(args):
 	else:
 		print("Log level '{}'".format(loglevel_str))
 
-	bot.start(block=True)
+	# Start the bot, block if non-interactive, otherwise let the shell handle the blocking
+	bot.start(block=not args.interactive)
 
 	if args.interactive:
 		local = {
@@ -112,6 +113,7 @@ def h_run(args):
 		}
 		code.interact(banner="Halibot welcomes you!", local=local)
 		bot.shutdown()
+		bot._thread.join()
 		print("Halibot bides you farewell.")
 
 def h_fetch(args):
