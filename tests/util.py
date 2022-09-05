@@ -21,6 +21,7 @@ class HalibotTestCase(unittest.TestCase):
 		# Silence expected error messages
 		logging.basicConfig(level=logging.CRITICAL)
 		self.bot = halibot.Halibot(use_config=False)
+		self.bot.start(block=False)
 
 	def tearDown(self):
 		self.bot.shutdown()
