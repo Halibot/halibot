@@ -151,8 +151,12 @@ class Halibot():
 		self.objects[name] = inst
 		inst.name = name
 		inst.log.name += "({})".format(name)
-		inst.init()
-		self.log.info("Instantiated object '" + name + "'")
+		try:
+			inst.init()
+		except Exception as e:
+			self.log.error(f"Failed to instantiate object '{name}': {e}")
+		else:
+			self.log.info("Instantiated object '" + name + "'")
 
 	def _load_config(self):
 		self.config._load_config(workdir=self.workdir)
