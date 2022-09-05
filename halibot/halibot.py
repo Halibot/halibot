@@ -9,7 +9,7 @@ import os, sys
 import importlib
 import collections
 import halibot.packages
-from distutils.version import StrictVersion as Version
+from packaging.version import Version
 from queue import Queue,Empty
 from string import Template
 from .halmodule import HalModule
