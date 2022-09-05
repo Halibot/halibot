@@ -4,6 +4,7 @@ import time
 import util
 import halibot
 import unittest
+import threading
 
 topic1_text = 'Help text one'
 topic2_text = 'Help text two'
@@ -65,6 +66,27 @@ class StubAgent(halibot.HalAgent):
 
 	def receive(self, msg):
 		self.received.append(msg)
+
+class TestHalibot(unittest.TestCase):
+	def test_blocking(self):
+		bot = halibot.Halibot(use_config=False)
+
+		thread = threading.Thread(target=lambda: bot.start(block=True))
+		thread.start()
+
+		util.waitOrTimeout(100, lambda: bot.running)
+		self.assertTrue(bot.running)
+		self.assertTrue(bot.eventloop.is_running())
+		self.assertFalse(bot.eventloop.is_closed())
+
+		bot.shutdown()
+		thread.join()
+
+		util.waitOrTimeout(100, lambda: not bot.running)
+		self.assertFalse(bot.running)
+		self.assertFalse(bot.eventloop.is_running())
+		self.assertTrue(bot.eventloop.is_closed())
+
 
 class TestCore(util.HalibotTestCase):
 
