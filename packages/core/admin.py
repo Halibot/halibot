@@ -11,6 +11,7 @@ class Admin(CommandModule):
 	HAL_MINIMUM = "0.1"
 
 	def init(self):
+		self.namespace = "admin"
 		self.commands = {
 			"shutdown": self.cmd_shutdown,
 			"reload": self.cmd_reload,

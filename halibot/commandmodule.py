@@ -27,6 +27,7 @@ class CommandModule(HalModule):
 		self.commands = {}
 		# Get the command prefix if defined, otherwise use "!" as default
 		self.prefix = self._hal.config.get("command_prefix", "!")
+		self.namespace = None
 
 	# Override only if you know what you are doing!
 	def receive(self, msg):
@@ -39,13 +40,22 @@ class CommandModule(HalModule):
 		if body and not body[0].startswith(self.prefix):
 			self.default(msg)
 			return
+		body[0] = body[0][1:]
+
+		if self.namespace:
+			name = body.pop(0)
+
+			if name != self.namespace:
+				return
+			if len(body) == 0:
+				return
 
 		# Ugly fix for commands without args
 		if len(body) == 1:
 			body.append("")
 
 		# This maybe should prevent a empty string as a key...
-		func = self.commands.get(body[0][1:])
+		func = self.commands.get(body[0])
 
 		if func:
 			func(body[1], msg=msg)
